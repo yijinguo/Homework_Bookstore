@@ -1,381 +1,293 @@
 #include <iostream>
 #include <fstream>
-#include <map>
-#include <set>
-using namespace std;
+#include <vector>
+#include <cstring>
+#include <algorithm>
+#define MAXSIZE 400
 
-template<class Key,class Value>
+template<class T>
 class database {
-
-    //块链用于保存索引对应的值在值文件中的读入位置
-    //只有在维护值时才打开值文件;只有在析构和构造时才打开索引文件
-
 private:
 
-    struct datalist{
-        map<Key,set<Value>> location;
-        Key begin,end;//记录本节点数组中索引值范围
-        int num = 0;//本节点已存储索引条目,即location大小
-        datalist *front;
-        datalist *next;
+    struct Information {
+        char index[65];
+        T value;
+
+        void Initialize(std::string _index, T _value) {
+            strcpy(index, _index.c_str());
+            value = _value;
+        }
+
+        bool operator<(const Information &b) {
+            if (strcmp(index, b.index) < 0) return true;
+            if (strcmp(index, b.index) > 0) return false;
+            if (value < b.value) return true;
+            return false;
+        }
+
+        friend bool operator<(const Information &a, const Information &b) {
+            if (strcmp(a.index, b.index) < 0) return true;
+            if (strcmp(a.index, b.index) > 0) return false;
+            if (a.value < b.value) return true;
+            return false;
+        }
+
+        bool operator>(const Information &b) {
+            if (strcmp(index, b.index) > 0) return true;
+            if (strcmp(index, b.index) < 0) return false;
+            if (value > b.value) return true;
+            return false;
+        }
+
+        friend bool operator>(const Information &a, const Information &b) {
+            if (strcmp(a.index, b.index) > 0) return true;
+            if (strcmp(a.index, b.index) < 0) return false;
+            if (a.value > b.value) return true;
+            return false;
+        }
+
+        friend bool operator>=(const Information &a, const Information &b) {
+            if (strcmp(a.index, b.index) > 0) return true;
+            if (strcmp(a.index, b.index) < 0) return false;
+            if (a.index >= b.index) return true;
+            return false;
+        }
+
+        bool operator==(const Information &b) {
+            if (strcmp(index, b.index) == 0 && value == b.value) return true;
+            return false;
+        }
     };
-    datalist *head;
-    datalist *rear;
-    int eachLength = 0;//每个节点数组长度,维护2√all;
-    int all = 0;//已储存总条目数
-    fstream fileKey;//储存索引的文件(索引值,在值文件的位置)
-    fstream fileValue;//储存值的文件
+
+    struct Node {
+        int num;
+        int next;
+        Information array[MAXSIZE];
+
+        void Initialized(std::string index, T value) {
+            num = 1;
+            next = -1;
+            Information initial;
+            initial.Initialize(index, value);
+            array[0] = initial;
+        }
+    };
+
+    int head = -1;
+    int sizeNod = sizeof(Node);
+    std::fstream dataFile;
+    std::string fileName = "AFileList";
 
 public:
 
-    string fileKeyName = "debugKey";
-    string fileValueName = "debugValue";
-
     database() {
-        head = new datalist;
-        rear = head;
-        head->front = nullptr;
-        rear->next = nullptr;
-        fileKey.open(fileKeyName,fstream::in);
-        fileValue.open(fileValueName,fstream::in);
-        if (!fileKey) {
-            fileKey.open(fileKeyName,fstream::out);
-            fileValue.open(fileValueName,fstream::out);
-            fileKey.close();
-            fileValue.close();
-            return;
+        dataFile.open(fileName, std::fstream::in);
+        if (!dataFile) {
+            dataFile.open(fileName, std::fstream::out);
+            dataFile.write(reinterpret_cast<char *>(&head), sizeof(int));
+        } else {
+            dataFile.seekg(0);
+            dataFile.read(reinterpret_cast<char *>(&head), sizeof(int));
         }
-        fileValue.close();
-        //fileKey和fileValue都已存在
-        //以下读取文件内信息,构建块链
-        fileKey >> eachLength;
-        datalist *it = rear;
-        it->num = 0;
-        while (fileKey.peek() != EOF) {
-            Key index;
-            long place;
-            fileKey >> index >> place;
-            if (it->location.count(index) != 0) {
-                it->location[index].insert(place);
-            } else {
-                if (rear == head) {
-                    it = new datalist;
-                    head->next = it;
-                    it->front = head;
-                    rear = it;
-                    rear->next = nullptr;
-                }
-                all++;
-                if (it->location.empty()) {
-                    it->begin = index;
-                }
-                if (it->num < eachLength / 2) {
-                    it->location[index].insert(place);
-                    it->end = index;
-                    it->num++;
-                } else {
-                    it = new datalist;
-                    it->location[index].insert(place);
-                    it->begin = it->end = index;
-                    it->num = 1;
-                    it->front = rear;
-                    rear->next = it;
-                    rear = it;
-                    rear->next = nullptr;
-                }
-            }
-        }
-        fileKey.close();
+        dataFile.close();
+        dataFile.open(fileName);
     }
 
     ~database() {
-        //把链表信息写入索引文件,首先写eachLength,然后把每组索引写入文件
-        fileKey.open(fileKeyName,fstream::out);
-        fileKey << eachLength;
-        datalist *it = head->next;
-        while (it != nullptr) {
-            auto iter = it->location.begin();
-            while (iter != it->location.end()) {
-                for (Value x : iter->second) {
-                    fileKey << ' ' << iter->first;
-                    fileKey << ' '<< x ;
-                }
-                iter->second.clear();
-                iter++;
-            }
-            it->location.clear();
-            it = it->next;
-        }
-        fileKey.close();
-        //析构链表
-        datalist *tmp = rear;
-        while (tmp != head) {
-            rear = rear->front;
-            delete tmp;
-            tmp = rear;
-        }
-        delete head;
+        dataFile.seekp(0);
+        dataFile.write(reinterpret_cast<char *>(&head), sizeof(int));
+        dataFile.close();
     }
 
-    void Insert(Key index, Value value){
-        //将信息写入两个文件
-        fileValue.open(fileValueName,fstream::app);
-        long place = fileValue.tellp();
-        fileValue << value << ' ';
-        fileValue.close();
-        //遍历链表，找到插入位置
-        if (head == rear) {//块链为空，直接增加节点
-            datalist *tmp = new datalist;
-            tmp->location[index].insert(place);
-            tmp->num = 1;
-            tmp->begin = tmp->end = index;
-            tmp->front = rear;
-            rear->next = tmp;
-            rear = tmp;
-            rear->next = nullptr;
-            eachLength = 2;
-            all = 1;
-        } else {//先找到对应位置，再考虑插入方法
-            datalist *it = head->next;
-            bool haveInsert = false;
-            while (it->next != nullptr) {
-                if (index >= it->begin && index <= it->end) {
-                    //在it节点范围内，放入it节点
-                    haveInsert = true;
-                    if (it->location.count(index) != 0) {
-                        it->location[index].insert(place);
-                    } else {
-                        all++;
-                        if (eachLength*eachLength < 4 * all) eachLength+=2;
-                        if (it->num < eachLength) {
-                            it->location[index].insert(place);
-                        } else {//分裂节点
-                            datalist *tmp = new datalist;
-                            tmp->end = it->end;
-                            tmp->location[index].insert(place);
-                            auto iter = it->location.begin();
-                            int iterNum = 1;
-                            while (iterNum < it->num / 2) {
-                                iterNum++;
-                                iter++;
-                            }
-                            //iterNum = it->num / 2
-                            it->end = iter->first;
-                            iter++;
-                            iterNum++;
-                            tmp->begin = iter->first;
-                            while (iterNum <= it->num) {
-                                tmp->location[iter->first] = iter->second;
-                                it->location.erase(iter->first);
-                                iter++;
-                                iterNum++;
-                            }
-                            it->num = it->num / 2;
-                            tmp->num = it->num + 1;
-                            //以上完成对it节点的分裂；以下完成对新增节点的维护
-                            it->next->front = tmp;
-                            tmp->next = it->next;
-                            it->next = tmp;
-                            tmp->front = it;
-                        }
-                    }
-                    break;
-                } else if (index > it->end && index < it->next->begin) {
-                    haveInsert = true;
-                    all++;
-                    if (eachLength*eachLength < 4 * all) eachLength += 2;
-                    if (it->num < eachLength) {
-                        it->location[index].insert(place);
-                        it->end = index;
-                        it->num++;
-                    } else if (it->next->num < eachLength) {
-                        it->next->location[index].insert(place);
-                        it->next->begin = index;
-                        it->next->num++;
-                    } else {
-                        datalist *tmp = new datalist;
-                        tmp->location[index].insert(place);
-                        tmp->begin = tmp->end = index;
-                        tmp->num = 1;
-                        it->next->front = tmp;
-                        tmp->next = it->next;
-                        it->next = tmp;
-                        tmp->front = it;
-                    }
-                    break;
-                } else {
-                    it = it->next;
-                }
+    void Insert(std::string index, T value) {
+        Information newInsert;
+        newInsert.Initialize(index, value);
+        if (head == -1) {
+            dataFile.seekp(0,std::ios::end);
+            long long newHead = dataFile.tellp();
+            head = (newHead - sizeof(int)) / sizeNod;
+            Node headNod;
+            headNod.Initialized(index, value);
+            dataFile.write(reinterpret_cast<char *>(&headNod), sizeNod);
+            return;
+        }
+        Node nodNow;
+        int nodLoc;
+        nodNow.next = head;
+        while (nodNow.next != -1) {
+            nodLoc = nodNow.next;
+            dataFile.seekg(nodNow.next * sizeNod + sizeof(int));
+            dataFile.read(reinterpret_cast<char *>(&nodNow), sizeNod);
+            if (nodNow.num == 0) continue;
+            if (newInsert > nodNow.array[nodNow.num - 1] && nodNow.next != -1) continue;
+            //nodNow.array[nodNow.num] = newInsert;
+            int next = std::upper_bound(nodNow.array, nodNow.array + nodNow.num, newInsert) - nodNow.array;
+            for (int i = nodNow.num; i >= next + 1; --i) {
+                nodNow.array[i] = nodNow.array[i - 1];
             }
-            //it为链表最后一个节点
-            if (!haveInsert) {
-                if (it->location.count(index) != 0) {
-                    it->location[index].insert(place);
-                } else {
-                    all++;
-                    if (eachLength*eachLength < 4 * all) eachLength += 2;
-                    if (it->num < eachLength) {
-                        it->location[index].insert(place);
-                        it->num++;
-                        if (index < it->begin) {
-                            it->begin = index;
-                        } else if (index > it->end) {
-                            it->end = index;
-                        }
-                    } else {//分裂节点
-                        datalist *tmp = new datalist;
-                        if (index > it->end) {
-                            tmp->end = index;
-                        } else {
-                            tmp->end = it->end;
-                        }
-                        tmp->location[index].insert(place);
-                        auto iter = it->location.begin();
-                        int iterNum = 1;
-                        while (iterNum < it->num / 2) {
-                            iterNum++;
-                            iter++;
-                        }
-                        //iterNum = it->num / 2
-                        it->end = iter->first;
-                        iter++;
-                        iterNum++;
-                        if (index < iter->first) {
-                            tmp->begin = index;
-                        } else {
-                            tmp->begin = iter->first;
-                        }
-                        while (iterNum <= it->num) {
-                            tmp->location[iter->first] = iter->second;
-                            it->location.erase(iter->first);
-                            iter++;
-                            iterNum++;
-                        }
-                        it->num = it->num / 2;
-                        tmp->num = it->num + 1;
-                        it->next = tmp;
-                        tmp->front = it;
-                        tmp->next = nullptr;
-                        rear = tmp;
+            nodNow.array[next] = newInsert;
+            nodNow.num++;
+            if (nodNow.num != MAXSIZE) {
+                dataFile.seekp(nodLoc * sizeNod + sizeof(int));
+                dataFile.write(reinterpret_cast<char *>(&nodNow), sizeNod);
+                return;
+            }
+            //分块
+            splitBlock(nodLoc,nodNow);
+            return;
+        }
+    }
+
+    void splitBlock(int nodLoc,Node &nodNow){
+        Node nodNew;
+        nodNew.num = nodNow.num = MAXSIZE / 2;
+        nodNew.next = nodNow.next;
+        for (int i = MAXSIZE / 2; i < MAXSIZE; ++i) {
+            nodNew.array[i - MAXSIZE / 2] = nodNow.array[i];
+        }
+        dataFile.seekp(0,std::ios::end);
+        long long _newLoc = dataFile.tellp();
+        int newLoc = (_newLoc - sizeof(int)) / sizeNod;
+        dataFile.write(reinterpret_cast<char*>(&nodNew),sizeNod);
+        nodNow.next = newLoc;
+        dataFile.seekp(nodLoc * sizeNod + sizeof(int));
+        dataFile.write(reinterpret_cast<char*>(&nodNow),sizeNod);
+    }
+
+    void Delete(std::string index, T value) {
+        if (head == -1) return;
+        Information deleteInf;
+        deleteInf.Initialize(index, value);
+        int nodLoc;
+        Node nodNow;
+        nodNow.next = head;
+        while (nodNow.next != -1) {
+            nodLoc = nodNow.next;
+            dataFile.seekg(nodNow.next * sizeNod + sizeof(int));
+            dataFile.read(reinterpret_cast<char *>(&nodNow), sizeNod);
+            if (nodNow.num == 0) continue;
+            if (deleteInf < nodNow.array[0]) {
+                return;
+            }
+            if (deleteInf > nodNow.array[nodNow.num - 1]) continue;
+            //可能在该节点内
+            if (nodNow.num == 1) {
+                //删节点;采用置空策略
+                if (nodLoc == head && nodNow.next == -1) {
+                    head = -1;
+                    return;
+                }
+                if (nodLoc == head) {
+                    head = nodNow.next;
+                    return;
+                }
+                nodNow.num--;
+                dataFile.seekp(nodLoc * sizeNod + sizeof(int));
+                dataFile.write(reinterpret_cast<char *>(&nodNow), sizeNod);
+                return;
+            }
+            //遍历数组
+            for (int i = 0; i < nodNow.num; ++i) {
+                if (nodNow.array[i] == deleteInf) {
+                    for (int j = i; j < nodNow.num - 1; ++j) {
+                        nodNow.array[j] = nodNow.array[j + 1];
                     }
+                    nodNow.num--;
+                    dataFile.seekp(nodLoc * sizeNod + sizeof(int));
+                    dataFile.write(reinterpret_cast<char *>(&nodNow), sizeNod);
+                    return;
                 }
             }
         }
     }
 
-    void Delete(Key index, Value value){
-        //遍历链表，找到相应元素
-        datalist *it = head->next;
+    void Find(std::string index) {
+        if (head == -1) {
+            std::cout << "null" << '\n';
+            return;
+        }
+        std::vector<T> allFind;
         bool haveFind = false;
-        while (it != nullptr) {
-            if (it->location.count(index) == 0) {
-                it = it->next;
-            } else {
-                haveFind = true;
-                break;
-            }
-        }
-        if (haveFind) {
-            set<Value> del = it->location[index];
-            fileValue.open(fileValueName);
-            auto iter = del.begin();
-            while (iter != del.end()) {
-                fileValue.seekg(*iter);
-                Value u;
-                fileValue >> u;
-                if (u == value) {
-                    del.erase(*iter);
+        Node nodNow;
+        nodNow.next = head;
+        while (nodNow.next != -1) {
+            dataFile.seekg(nodNow.next * sizeNod + sizeof(int));
+            dataFile.read(reinterpret_cast<char *>(&nodNow), sizeNod);
+            if (nodNow.num == 0) continue;
+            if (index < std::string(nodNow.array[0].index)) break;
+            if (index > std::string(nodNow.array[nodNow.num - 1].index)) continue;
+            //可能在本节点内
+            bool findEnd = false;
+            for (int i = 0; i < nodNow.num; ++i) {
+                if (index < std::string(nodNow.array[i].index)) {
+                    findEnd = true;
                     break;
                 }
-            }
-            fileValue.close();
-            if (del.empty()) {
-                it->num--;
-                all--;
-                if ((eachLength - 1) * (eachLength - 1) > 4 * all) eachLength -= 2;
-                if (it->num == 0) {
-                    if (it->next == nullptr) {
-                        it->front->next = nullptr;
-                    } else {
-                        it->front->next = it->next;
-                        it->next->front = it->front;
-                    }
-                    delete it;
-                } else {
-                    if (index == it->begin) {
-                        auto iter1 = (++it->location.begin());
-                        it->begin = iter1->first;
-                    } else if (index == it->end) {
-                        auto iter1 = (++it->location.rbegin());
-                        it->end = iter1->first;
-                    }
-                    it->location.erase(index);
-                }
-            } else {
-                it->location[index] = del;
-            }
-        }
-    }
-
-    void Find(Key index){
-        //遍历链表，找到相应元素
-        datalist *it = head->next;
-        bool haveFind = false;
-        while (it != nullptr) {
-            if (it->location.count(index) == 0) {
-                it = it->next;
-            } else {
+                if (index > std::string(nodNow.array[i].index)) continue;
                 haveFind = true;
-                break;
+                allFind.push_back(nodNow.array[i].value);
             }
+            if (findEnd) break;
         }
         if (!haveFind) {
-            cout << "null" << '\n';
-        } else {
-            set<Value> plus = it->location[index];
-            auto iter = plus.begin();
-            fileValue.open(fileValueName);
-            set<Value> findOut;
-            while (iter != plus.end()) {
-                fileValue.seekg(*iter);
-                Value value;
-                fileValue >> value;
-                findOut.insert(value);
-                iter++;
-            }
-            fileValue.close();
-            for (Value x:findOut) {
-                cout << x << " ";
-            }
-            cout << '\n';
+            std::cout << "null" << '\n';
+            return;
         }
+        auto it = allFind.begin();
+        while (it != (--allFind.end())) {
+            std::cout << *it << ' ';
+            it++;
+        }
+        std::cout << *it << '\n';
+    }
+
+    void printList() {
+        std::fstream printFile("APrintList.out", std::fstream::out);
+        Node nodNow;
+        nodNow.next = head;
+        dataFile.open(fileName);
+        printFile << head << '\n';
+        while (nodNow.next != -1) {
+            dataFile.seekg(nodNow.next * sizeNod + sizeof(int));
+            dataFile.read(reinterpret_cast<char *>(&nodNow), sizeNod);
+            printFile << nodNow.num << '\n';
+            if (nodNow.num == 0) continue;
+            for (int i = 0; i < nodNow.num; ++i) {
+                printFile << nodNow.array[i].index << ' ' << nodNow.array[i].value << '\n';
+            }
+        }
+        dataFile.close();
     }
 
 };
 
-int main(){
-    freopen("gyj.in","r",stdin);
+using namespace std;
+int main() {
+    //freopen("5.in","r",stdin);
+    //freopen("gyj.out","w",stdout);
     int n;
     cin >> n;
     string command;
-    database<string,int> content;
+    database<int> content;
     for (int i = 1; i <= n; ++i) {
         cin >> command;
         if (command == "insert") {
             string index;
             int value;
             cin >> index >> value;
-            content.Insert(index,value);
+            content.Insert(index, value);
         } else if (command == "delete") {
             string index;
             int value;
             cin >> index >> value;
-            content.Delete(index,value);
+            content.Delete(index, value);
         } else if (command == "find") {
             string index;
             cin >> index;
             content.Find(index);
         }
     }
+    //以下数行函数调用用于debug
+    //content.printList();
     return 0;
 }
