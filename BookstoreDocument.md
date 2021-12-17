@@ -4,7 +4,9 @@
 
 partner：胡珂雅
 
-2021-12-5
+2021-12-17
+
+版本信息 ：开发者自主修改第一次
 
 ### 一、程序功能概述
 
@@ -36,13 +38,13 @@ partner：胡珂雅
 
 ### 四、各代码文件的具体说明
 
-###### 1.parser.h : 解析指令，将指令处理成Commmand型（一个自定义的类）指针
+###### 1.parser.h : 解析指令，将指令处理成Commmand型（一个自定义的类）变量
 
 ```c++
 //解构输入的命令行
-Command *parseCommand(std::string commandLine);
+Command parseCommand(std::string commandLine);
 
-//根据字符串判断指令类型
+//根据字符串判断指令类型，Usertype为一个自定义的枚举类型，详细说明见下
 Usertype getType(std::string command);
 ```
 
@@ -50,13 +52,36 @@ Usertype getType(std::string command);
 
 ###### 2.statement.h : 对三个系统所有指令的具体实现，根据权限不同，设一个接口类和四个派生类。
 
+本书店包括三个系统，对于账户和图书系统中每位用户和每本图书的信息，请用两个结构体封装。
+
+```c++
+/*用户信息*/
+struct UserInf {
+    char user_ID[30];
+    char password[30];
+    char user_name[30];
+    int Priority;
+};
+
+/*图书信息*/
+struct BookInf {
+    char ISBN[20] = "";
+    char book_name[60] = "";
+    char author[60] = "";
+    char keyword[60] = "";
+    int quantity = 0;
+    float price = 0;
+    float total_coat = 0;
+};
+```
+
 本书店系统的所有账户的操作均需保持登录状态，对此，请使用如下的登录栈实现：
 
 ```c++
-std::stack<std::string> accountIn;
+std::stack<UserInf> accountIn;
 ```
 
-本书点系统中的账户权限不同，对此，请自定义一个枚举类型，如下：
+本书店系统中的账户权限不同，对此，请自定义一个枚举类型，如下：
 
 ```c++
 enum Usertype {visitor, customer, staff, shopkeeper};
@@ -235,6 +260,7 @@ public:
     //*生成全体员工工作情况报告report employee
     void reportEmployee();
     //*生成日志log
+    /*对于该函数的实现有文件输出格式要求，详见四、3中关于文件的说明*/
     void Log();
 
     virtual void execute();
@@ -248,88 +274,54 @@ public:
 
 利用本代码文件中的函数，实现一个 *Key-value database（键值数据库）*
 
-在此对本书店系统涉及的数据文件进行申明：
-
-(1) 账户系统 ：需要一个文件储存所有的账户信息，其中[User-ID]唯一。
-
-(2) 图书系统 ：需要一个文件储存所有的图书信息，其中[ISBN]唯一。
-
-(3) 日志系统 ：
-
-需要一个文件储存所有财务交易信息；
-
-需要一个文件储存整个系统的全部操作记录；
-
-需要多个文件分别储存每个员工的操作记录，建议以各员工ID命名；
-
 以下对本代码文件中简要说明。
 
 database类：
 
-```c++
-template<class T>
-class database{
-private:
-    std::fstream file;
-    std::string file_name;
-    int sizeofT = sizeof(T);
-    int position;//定位
-    
-    /*可以自行添加私有成员变量*/
-    
-public:
-    database() = default;
-    ~database();
-    database(const std::string& file_name) : file_name(file_name){}
-    //以[index]为索引，插入数据data
-    void Insert(std::string index, T data);
-    //以[index]为索引，删去数据
-    void Delete (std::string index);
-    //以[index]为索引，获取数据
-    T Find (std::string index);
-    
-    /*可以根据需要自行添加成员函数*/
-
-};
-```
-
-另外，对于具体实现方式，本开发文档不做限制，推荐使用块状链表。
+对于具体实现方式，本开发文档不做限制，推荐使用块状链表。
 
 以下给出一个实现块状链表的模板类，仅供参考。
 
 ```c++
-template<class T>
-    
-class BlockList {
+/*该模板类的目的为实现一个类似于std::set的文件存储结构*/
+
+#define MAXSIZE num /*your-ideal-num*/
+
+//Data表示存储的信息类型
+template<class Data>
+class database {
 
 private:
 
-    int num = 0;//记录读写文件位置
-    struct list{
-        /*该容器可以允许自行替换*/
-        std::map<T, int> position;
-        list *next;
-        list *front;
+    //块链中的信息按照所存储条目中具有唯一性的信息排序
+    struct Node {
+        int num;
+        int next;
+        Data array[MAXSIZE];
     };
-    list *head;
-    list *rear;
-
+    int head = -1;//用于记录头节点在文件中的位置
+    int sizeData = sizeof(Data);
+    int sizeNod = sizeof(Node);
+    std::fstream dataFile;
+    std::string fileName = "your-ideal-name";
+    //节点分割
+    void spilt(int nodLoc);
+    //节点合并
+    void merge(int nodLoc);
+    //根据索引直接找到文件读写位置并返回;找不到则返回-1
+    int findLoc(std::string index);
+    
 public:
 
     /*以下函数允许自行更改参数，完成功能后告知开发者即可*/
-
-    //根据索引直接找到文件读写位置并返回
-    int find(T index);
+    
     //插入数据;策略：扫过链表，找到相应的位置，分割节点并插入
-    void insert(T index, std::string data);
+    void insert(std::string index, std::string data);
     //删除数据;策略：扫过链表，找到相应的位置，分割节点并删除
-    void erase(T index, std::string data);
-    /*节点分割与合并两个函数,自行填充参数；如果认为多余可以忽略*/
-    //节点分割
-    void spilt();
-    //节点合并
-    void merge();
-
+    void erase(std::string index, std::string data);
+    //修改信息
+    /*请自行实现函数定义*/
+    
     /*如有需要可自行补充函数*/
 
 };
@@ -337,12 +329,14 @@ public:
 
 （申明：由于开发者水平有限，该部分执行者具有较大自主权，如有必要可以无视database.h内所有给定的类，自行实现，告知开发者即可）
 
+
+
 ###### 4.error.h :  异常处理，捕获输入指令时出现的异常并处理。
 
 包含一个异常类MyError，开发者可以自主选择构造函数和成员函数，完成异常处理。
 
 ```c++
-class MyError{
+class MyError : public std::exception {
     /*该部分开发者具有较大自主权
      *根据异常情况自行决定构造函数和成员函数*/
 public:
@@ -353,7 +347,43 @@ public:
 
 
 
-### 五、其他补充说明
+### 五、数据文件说明
+
+在此对本书店系统涉及的数据文件进行说明：
+
+一）程序运行中用于储存数据的文件：
+
+(1) 账户系统 ：需要一个文件储存所有的账户信息，以结构体UserInf为单位，其中[User-ID]唯一。
+
+(2) 图书系统 ：需要一个文件储存所有的图书信息，以结构体BookInf为单位，其中[ISBN]唯一。
+
+二）根据指令生成的输出文件：
+
+这部分文件随指令的进行发生更改。
+
+(1)需要一个文件保存所有财务交易信息；
+
+需要在购买图书和图书进货指令时写入信息，信息格式：
+
+购买图书  `buy : [User-ID] buy [ISBN] [Book-Name] [Quantity] for [total-cost]  `
+
+图书进货 `import : [User-ID] import [ISBN] [Quantity] [Total-Cost]`
+
+(2)需要一个文件保存整个系统操作类的信息，信息格式：`[User-ID] + /每行指令的输入信息/`
+
+注意，`每行指令的输入信息`可以根据每条指令的不同自主选择可读性更强的保存格式，由执行者自主决定，无需向开发者说明。
+
+(3)需要多个文件分别保存每个员工的操作记录，建议以各员工ID命名,信息格式：
+
+每位员工的个人文件中，每条信息的格式：`/每行指令的输入信息/ `
+
+注意，`每行指令的输入信息`可以根据每条指令的不同自主选择可读性更强的保存格式，由执行者自主决定，无需向开发者说明。
+
+(4)需要一个文件保存日志指令，该文件在执行log指令时才进行更改，输出内容为(2)(1)两个文件中信息的合并。
+
+
+
+### 六、其他补充说明
 
 1.本文档开发过程中对任何bonus内容均未予考虑。
 
