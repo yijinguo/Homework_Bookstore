@@ -6,7 +6,7 @@
 #include <fstream>
 #include <cstring>
 #include <algorithm>
-#include "error.h"
+#include "../error.h"
 
 template<class T>//文件数据结构类接口
 class FileData {

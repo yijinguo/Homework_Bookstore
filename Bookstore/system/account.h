@@ -1,7 +1,7 @@
 #ifndef UNTITLED3_ACCOUNT_H
 #define UNTITLED3_ACCOUNT_H
 
-#include "FileData.h"
+#include "../FileDataBase/FileData.h"
 #include <vector>
 
 struct AccountInf {
@@ -9,28 +9,52 @@ struct AccountInf {
     char userID[30];
     char password[30];
     char userName[30];
-    bool operator<(const AccountInf &b){
+    bool operator<(const AccountInf &b) const {
         if (strcmp(userID,b.userID) < 0) return true;
         return false;
     }
-    bool operator>(const AccountInf &b){
-        if (strcmp(userID,b.userID) > 0) return true;
+    friend bool operator<(const AccountInf &a,const AccountInf &b){
+        if (strcmp(a.userID,b.userID) < 0) return true;
         return false;
     }
-    friend bool operator>(const AccountInf &a,AccountInf &b){
-        if (strcmp(a.userID,b.userID) >= 0) return true;
+    bool operator<=(const AccountInf &b) const {
+        if (strcmp(userID,b.userID) <= 0) return true;
         return false;
     }
-    friend bool operator<(const AccountInf &a,AccountInf &b){
+    friend bool operator<=(const AccountInf &a,const AccountInf &b){
         if (strcmp(a.userID,b.userID) <= 0) return true;
         return false;
     }
-    bool operator==(const AccountInf &b) {
+    bool operator>(const AccountInf &b) const {
+        if (strcmp(userID,b.userID) > 0) return true;
+        return false;
+    }
+    friend bool operator>(const AccountInf &a,const AccountInf &b){
+        if (strcmp(a.userID,b.userID) >= 0) return true;
+        return false;
+    }
+    bool operator>=(const AccountInf &b) const {
+        if (strcmp(userID,b.userID) > 0) return true;
+        return false;
+    }
+    friend bool operator>=(const AccountInf &a,const AccountInf &b){
+        if (strcmp(a.userID,b.userID) >= 0) return true;
+        return false;
+    }
+    bool operator==(const AccountInf &b) const {
         if (strcmp(userID,b.userID) == 0) return true;
         return false;
     }
-    friend bool operator==(const AccountInf &a, AccountInf &b) {
+    friend bool operator==(const AccountInf &a, const AccountInf &b) {
         if (strcmp(a.userID, b.userID) == 0) return true;
+        return false;
+    }
+    bool operator!=(const AccountInf &b) const {
+        if (strcmp(userID,b.userID) == 0) return true;
+        return false;
+    }
+    friend bool operator!=(const AccountInf &a, const AccountInf &b) {
+        if (strcmp(a.userID, b.userID) != 0) return true;
         return false;
     }
     void Initialize(){
