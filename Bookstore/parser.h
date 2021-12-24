@@ -1,9 +1,7 @@
 #ifndef UNTITLED3_PARSER_H
 #define UNTITLED3_PARSER_H
 
-#include <cstring>
 #include "statement.h"
-#include "error.h"
 
 class parser{
 private:
@@ -17,10 +15,11 @@ private:
         if (cmd[index] != '\0') {
             firstWordIndex = index;
             while (cmd[index] != ' ' && cmd[index] != '\0') {++index;}
-            char word[index - firstWordIndex];
+            char word[index - firstWordIndex + 1];
             for (int i = 0; i < index - firstWordIndex; ++i) {
                 word[i] = cmd[i + firstWordIndex];
             }
+            word[index - firstWordIndex] = '\0';
             std::string result = std::string(word);
             while (cmd[index] == ' ') {++index;}
             int l = cmd.length();
@@ -28,9 +27,7 @@ private:
                 cmd[0] = '\0';
                 return result;
             }
-            for (int i = index; i < l; ++i) {
-                cmd[i - index] = cmd[i];
-            }
+            for (int i = index; i < l; ++i) cmd[i - index] = cmd[i];
             cmd[l - index] = '\0';
             return result;
         } else {

@@ -1,9 +1,8 @@
 #include "account.h"
 
-AccountInf Account::accountLog = {0, "0", "0", "0"};
-
 Account::Account() {
-    accountDataStore.initialize("filAllAccountData ","fileAllAccount");
+    initialize();
+    accountDataStore.initialize("fileAllAccountData ","fileAllAccount");
     AccountInf shopkeeper;
     shopkeeper.Initialize();
     accountDataStore.addInfo("root",shopkeeper);
@@ -26,6 +25,10 @@ void Account::su(const std::string &_user_id, const std::string &_password){
 void Account::logout(){
     try{
         if (accountLog.priority < 1) throw BasicException();
+        if (accountInStack.judgeNull()) {
+            accountLog.priority = 0;
+            return;
+        }
         std::string nowInLog = accountInStack.pop();
         AccountInf another = accountDataStore.readInfo(nowInLog);
         setLog(another);
@@ -72,10 +75,7 @@ void Account::Useradd(const std::string &_user_id, const std::string &_password,
         strcpy(newCreate.password,_password.c_str());
         strcpy(newCreate.userName,_user_name.c_str());
         accountDataStore.addInfo(_user_id,newCreate);
-        if (priority == 3) {
-            staffNum++;
-            staffAll.push_back(_user_id);
-        }
+        if (priority == 3) addStaff(_user_id);
     } catch (BasicException &ex) {
         throw BasicException();
     }

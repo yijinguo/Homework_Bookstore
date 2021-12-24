@@ -1,199 +1,171 @@
 #include "FileData.h"
 
-template<class T>
-FileDataString<T>::FileDataString() = default;
-template<class T>
-FileDataString<T>::~FileDataString(){
-    file.seekp(0);
-    file.write(reinterpret_cast<char*>(&head), sizeof(int));
-    file.close();
+Stack::Stack(){
+    stackLog.open("fileStackLog");
 }
 
-//初始化该文件:创建文件
-void initialise(std::string FN){
-    fileName = FN;
-    file.open(fileName,std::fstream::in);
+Stack::~Stack() {
+    stackLog.close();
+    stackLog.open("fileStackLog",std::fstream::out);
+    stackLog.close();
+}
+
+void Stack::push(std::string content){
+    Information newPush;
+    newPush.front = nowLoc;
+    strcpy(newPush.index,content.c_str());
+    lastLoc = nowLoc;
+    stackLog.seekp(0,std::ios::end);
+    nowLoc = stackLog.tellp() / sizeT;
+    stackLog.write(reinterpret_cast<char*>(&newPush),sizeT);
+}
+
+std::string Stack::pop(){
+    Information last;
+    nowLoc = lastLoc;
+    stackLog.seekg(lastLoc * sizeT);
+    stackLog.read(reinterpret_cast<char*>(&last),sizeT);
+    lastLoc = last.front;
+    return std::string(last.index);
+}
+
+bool Stack::judgeNull() const {
+    if (nowLoc == -1) return true;
+    return false;
+}
+
+bool Stack::InStack(std::string index) {
+    int tmp_nowLoc = nowLoc;
+    Information tmp;
+    while (tmp_nowLoc != -1) {
+        stackLog.seekg(tmp_nowLoc);
+        stackLog.read(reinterpret_cast<char *>(&tmp), sizeT);
+        if (index == std::string(tmp.index)) return true;
+        tmp_nowLoc = tmp.front;
+    }
+    return false;
+}
+
+
+DiaryRecord::DiaryRecord(){
+    diaryRecord.open("fileDiaryRecord",std::fstream::in);
+    if (!diaryRecord) {
+        diaryRecord.open("fileDiaryRecord",std::fstream::out);
+        staffRecord.open("fileStaffRecord",std::fstream::out);
+        staffRecord.close();
+    }
+    diaryRecord.close();
+    staffRecord.open("fileStaffRecord");
+    diaryRecord.open("fileDiaryRecord");
+}
+
+DiaryRecord::~DiaryRecord(){
+    diaryRecord.close();
+    staffRecord.close();
+}
+
+void DiaryRecord::write(int &priority,std::string &name, std::string &content){
+    diaryRecord.seekp(0,std::ios::end);
+    diaryRecord << priority << " " << name << " " << content << '\n';
+}
+//生成员工操作,注意生成最后需要多输出一行'\n'作为划分
+void DiaryRecord::returnIndex(std::string index) {
+    int _priority;
+    std::string _name;
+    std::string _content;
+    diaryRecord.seekg(0);
+    staffRecord.seekp(0,std::ios::end);
+    staffRecord << index << "'s record" <<'\n';
+    while (diaryRecord.peek() != EOF) {
+        diaryRecord >> _priority >> _name >> _content;
+        if (_priority == 3 && _name == index) {
+            staffRecord << _content << '\n';
+        }
+    }
+    std::cout << '\n';
+}
+
+void DiaryRecord::clear(){
+    diaryRecord.close();
+    diaryRecord.open("fileDiaryRecord",std::fstream::out);
+    diaryRecord.close();
+    diaryRecord.open("fileDiaryRecord");
+}
+
+
+
+FinanceRecord::FinanceRecord(){
+    file.open("fileFinanceRecord",std::fstream::in);
     if (!file) {
-        file.open(fileName,std::fstream::out);
-        file.write(reinterpret_cast<char*>(&head), sizeof(int));
-    } else {
-        file.seekg(0);
-        file.read(reinterpret_cast<char*>(&head), sizeof(int));
+        file.open("fileFinanceRecord",std::fstream::out);
     }
     file.close();
-    file.open(fileName);
+    file.open("fileFinanceRecord");
+    Time = 0;
+    strcpy(inAll, "0");
+    strcpy(outAll,"0");
 }
 
-//添加某数据
-void addInfo(std::string index, T info){
-    Information newInsert;
-    newInsert.Initialize(index,info);
-    if (head == -1) {
-        file.seekp(0,std::ios::end);
-        long long newHead = file.tellp();
-        head = (newHead - sizeof(int)) / sizeofNod;
-        Node add;
-        add.Initialize(index,info);
-        file.write(reinterpret_cast<char*>(&add),sizeofNod);
-        return;
-    }
-    Node nodNow;
-    int nodLoc;
-    nodNow.next = head;
-    while (nodNow.next != -1) {
-        nodLoc = nodNow.next;
-        file.seekg(nodNow.next * sizeofNod + sizeof(int));
-        file.read(reinterpret_cast<char*>(&nodNow),sizeofNod);
-        if (nodNow.num == 0) continue;
-        if (newInsert > nodNow.array[nodNow.num - 1] && nodNow.next != -1) continue;
-        int next = std::upper_bound(nodNow.array, nodNow.array + nodNow.num,info) - nodNow.array;
-        if (newInsert == nodNow.array[next]) throw BasicException();
-        for (int i = nodNow.num; i > next; --i) {
-            nodNow.array[i] = nodNow.array[i - 1];
-        }
-        nodNow.array[next] = newInsert;
-        nodNow.num++;
-        if (nodNow.num != MAXSIZE) {
-            file.seekp(nodLoc * sizeofNod + sizeof(int));
-            file.write(reinterpret_cast<char*>(&nodNow),sizeofNod);
-            return;
-        }
-        Split(nodLoc,nodNow);
-        return;
-    }
-}
-//分块
-void Split(int nodLoc,Node &nodNow){
-    Node nodNew;
-    nodNew.num = nodNow.num = MAXSIZE / 2;
-    nodNew.next = nodNow.next;
-    for (int i = MAXSIZE / 2; i < MAXSIZE; ++i) {
-        nodNew.array[i - MAXSIZE / 2] = nodNow.array[i];
-    }
-    file.seekp(0,std::ios::end);
-    long long _newLoc = file.tellp();
-    int newLoc = (_newLoc - sizeof(int)) / sizeofNod;
-    file.write(reinterpret_cast<char*>(nodNew),sizeofNod);
-    nodNow.next = newLoc;
-    file.seekp(nodLoc * sizeofNod + sizeof(int));
-    file.write(reinterpret_cast<char*>(&nodNow),sizeofNod);
+FinanceRecord::~FinanceRecord(){
+    file.close();
 }
 
-//删除某数据(只关心索引string)
-void deleteInfo(std::string index){
-    if (head == -1) throw BasicException();
-    Information deleteInf;
-    deleteInf.index = index;
-    int nodLoc;
-    Node nodNow;
-    nodNow.next = head;
-    while (nodNow.next != -1) {
-        nodLoc = nodNow.next;
-        file.seekg(nodNow.next * sizeofNod + sizeof(int));
-        file.read(reinterpret_cast<char*>(&nodNow),sizeofNod);
-        if (nodNow.num == 0) continue;
-        if (deleteInf < nodNow.array[0]) throw BasicException();
-        if (deleteInf > nodNow.array[nodNow.num - 1]) continue;
-        //可能在该块内
-        if (nodNow.num == 1) {
-            if (nodLoc == head && nodNow.next == -1) {
-                head = -1;
-                return;
-            }
-            if (nodLoc == head) {
-                head = nodNow.next;
-                return;
-            }
-            nodNow.num--;
-            file.seekp(nodLoc * sizeofNod + sizeof(int));
-            file.write(reinterpret_cast<char*>(&nodNow),sizeofNod);
-            return;
-        }
-        int n = std::lower_bound(nodNow.array, nodNow.array + nodNow.num, deleteInf) - nodNow.array;
-        if (n >= nodNow.num || nodNow.array[n] != deleteInf) throw BasicException();
-        for (int i = n; i < nodNow.num - 1; ++i) {
-            nodNow.array[i] = nodNow.array[i + 1];
-        }
-        nodNow.num--;
-        file.seekp(nodLoc * sizeofNod + sizeof(int));
-        file.write(reinterpret_cast<char*>(&nodNow),sizeofNod);
-        return;
+void FinanceRecord::addRecord(std::string income, std::string expense){
+    Information add;
+    Time++;
+    double in = stringToDouble(income) + stringToDouble(std::string(inAll));
+    strcpy(inAll, doubleToString(in).c_str());
+    double out = stringToDouble(expense) + stringToDouble(std::string(outAll));
+    strcpy(outAll, doubleToString(out).c_str());
+    add.time = Time;
+    strcpy(add.income, inAll);
+    strcpy(add.expense, outAll);
+    file.seekp(0, std::ios::end);
+    file.write(reinterpret_cast<char*>(&add),sizeInf);
+}
+
+void FinanceRecord::printTime(int time){
+    if (time > Time) throw BasicException();
+    Information print;
+    file.seekg(time * sizeInf);
+    file.read(reinterpret_cast<char*>(&print),sizeInf);
+    std::cout << "+ " << print.income << " - " << print.expense << '\n';
+}
+
+void FinanceRecord::printAll(){
+    for (int i = 0; i < Time; ++i) {
+        Information print;
+        file.seekg(i * sizeInf);
+        file.read(reinterpret_cast<char*>(&print),sizeInf);
+        std::cout << "+ " << print.income << " - " << print.expense << '\n';
     }
 }
 
-//返回某位置的数据
-T readInfo(std::string index) {
-    if (head == -1) throw BasicException();
-    Information findInf;
-    findInf.index = index;
-    int nodLoc;
-    Node nodNow;
-    nodNow.next = head;
-    while (nodNow.next != -1) {
-        nodLoc = nodNow.next;
-        file.seekg(nodNow.next * sizeofNod + sizeof(int));
-        file.read(reinterpret_cast<char*>(&nodNow),sizeofNod);
-        if (nodNow.num == 0) continue;
-        if (findInf < nodNow.array[0]) throw BasicException();
-        if (findInf > nodNow.array[nodNow.num - 1]) continue;
-        //可能在该块内
-        if (nodNow.num == 1) {
-            return nodNow.array[0];
-        }
-        int n = std::lower_bound(nodNow.array, nodNow.array + nodNow.num, findInf) - nodNow.array;
-        if (n >= nodNow.num || nodNow.array[n] != findInf) throw BasicException();
-        return nodNow.array[n];
+
+
+
+TradeRecord::TradeRecord(){
+    tradeRecord.open("fileTradeFile",std::fstream::in);
+    if (!tradeRecord) {
+        tradeRecord.open("fileTradeFile",std::fstream::out);
     }
+    tradeRecord.close();
+    tradeRecord.open("fileTradeFile");
 }
 
-//修改某数据
-void modifyInfo(std::string oldIndex, std::string newIndex, T &info) {//原index,新index,新数据info
-    try {
-        if (oldIndex != newIndex) {
-            deleteInfo(oldIndex);
-            addInfo(newIndex, info);
-        } else {
-            if (head == -1) throw BasicException();
-            Information findInf;
-            findInf.index = oldIndex;
-            int nodLoc;
-            Node nodNow;
-            nodNow.next = head;
-            while (nodNow.next != -1) {
-                nodLoc = nodNow.next;
-                file.seekg(nodNow.next * sizeofNod + sizeof(int));
-                file.read(reinterpret_cast<char *>(&nodNow), sizeofNod);
-                if (nodNow.num == 0) continue;
-                if (findInf < nodNow.array[0]) throw BasicException();
-                if (findInf > nodNow.array[nodNow.num - 1]) continue;
-                //可能在该块内
-                if (nodNow.num == 1) {
-                    nodNow.array[0] = info;
-                } else {
-                    int n = std::lower_bound(nodNow.array, nodNow.array + nodNow.num, findInf) - nodNow.array;
-                    if (n >= nodNow.num || nodNow.array[n] != findInf) throw BasicException();
-                    nodNow.array[n] = info;
-                }
-                file.seekp(nodLoc * sizeofNod + sizeof(int));
-                file.write(reinterpret_cast<char *>(&nodNow), sizeofNod);
-            }
-        }
-    } catch (BasicException &ex) {
-        throw BasicException();
-    }
+TradeRecord::~TradeRecord(){
+    tradeRecord.close();
 }
 
-//返回某数据的上一位数据
-//T frontInfo(const T info);
-//查找某索引的数据是否存在
-bool findInfo(const T info);
-//打印数据全体
-void printAllInfo();
-//打印符合demandInfo要求的内容
-void printDemand(T demandInfo);
-//获得该数据的位置（依靠index文件类）
-//int getIndex(const T info);
-//合并块
-//void Merge();
-//删除某个块
-//void deleteBlock();
+void TradeRecord::buyBook(std::string _user_id, std::string isbn,std::string _book_name,int _quantity,std::string cost){
+    tradeRecord << _user_id << " buy " << isbn << " " << _book_name << " " << _quantity << " " << cost << '\n';
+}
+
+void TradeRecord::importBook(std::string _user_id,std::string isbn,std::string _book_name,int _quantity,std::string cost){
+    tradeRecord << _user_id << " import " << isbn << " " << _book_name << " " << _quantity << " " << cost << '\n';
+}
+
+void TradeRecord::writeTotal(FinanceRecord &a){
+    tradeRecord << a.Time << "  + " << a.inAll << " - " << a.outAll << '\n';
+}
+

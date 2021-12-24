@@ -1,5 +1,10 @@
 #include "statement.h"
 
+AccountInf Account::accountLog = {0,"0","0","0"};
+int Account::staffNum = 0;
+bool Account::haveSelect = false;
+std::vector<std::string> Account::staffAll;
+
 Statement::Statement() = default;
 Statement::~Statement() noexcept  = default;
 //顺序解析命令语句，得到单词
@@ -15,10 +20,9 @@ void Statement::separateCmd(std::string &cmd){
         }
         int wordHead = index;
         while (cmd[index] != ' ' && cmd[index] != '\0') { ++index; }
-        char word[index - wordHead];
-        for (int i = 0; i < index - wordHead; ++i) {
-            word[i] = cmd[i + wordHead];
-        }
+        char word[index - wordHead + 1];
+        for (int i = 0; i < index - wordHead; ++i) {word[i] = cmd[i + wordHead];}
+        word[index - wordHead] = '\0';
         std::string separateWord = std::string(word);
         wordNum++;
         words.push_back(separateWord);
@@ -260,6 +264,7 @@ void Import::execute() {
         int priority = Account::accountLog.priority;
         std::string name = std::string(Account::accountLog.userID);
         diarySystem.write(priority, name,diaryLine);
+
     } catch (BasicException &ex) {
         throw BasicException();
     }
@@ -281,6 +286,7 @@ void ReportMyself::execute() {
         diarySystem.reportMyself(ID);
         int priority = Account::accountLog.priority;
         std::string name = std::string(Account::accountLog.userID);
+        diarySystem.reportMyself(name);
         diarySystem.write(priority, name, diaryLine);
     } catch (BasicException &ex) {
         throw BasicException();
@@ -291,17 +297,21 @@ ShowFinance::ShowFinance(std::string &cmd,std::string &line){
     diaryLine = line;
     cmdLine = cmd;
 }
+
 void ShowFinance::execute() {
     try {
         separateCmd(cmdLine);
         if (wordNum == 1) {
-            diarySystem.showFinance("-1");
+            diarySystem.showFinance(-1);
         } else if (wordNum == 2) {
             if (words[1].length() > 10) throw BasicException();
+            int time = 0, place = 1;
             for (int i = 0; i < words[1].length(); ++i) {
                 if (!(words[1][i] >= '0' && words[1][i] <= '9')) throw BasicException();
+                time += place * (words[1][i]- '0');
+                place *= 10;
             }
-            diarySystem.showFinance(words[1]);
+            diarySystem.showFinance(time);
         } else {
             throw BasicException();
         }
@@ -312,6 +322,7 @@ void ShowFinance::execute() {
         throw BasicException();
     }
 }
+
 
 ReportFinance::ReportFinance(std::string &cmd, std::string &line){
     diaryLine = line;

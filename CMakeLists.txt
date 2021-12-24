@@ -14,4 +14,5 @@ add_executable(code Bookstore/main.cpp
         Bookstore/system/diary.h
         Bookstore/system/diary.cpp
         Bookstore/FileDataBase/FileData.h
+        Bookstore/FileDataBase/FileData.cpp
         Bookstore/error.h)

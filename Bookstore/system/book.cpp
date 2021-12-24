@@ -1,6 +1,7 @@
+
+#include <set>
 #include "books.h"
 
-//todo keyword,book-name,author不含英文双引号，该问题没有判断
 
 Books::Books(){
     BookDataStore.initialize("fileAllBooksData","fileAllBooks");
@@ -16,7 +17,6 @@ void Books::show(std::string cmd) {
             //输出所有图书
             BookDataStore.printAllInfo();
         } else if (cmd[index] == '-') {
-
             int tmp = index;
             while (cmd[index] != '=' && cmd[index] != '\0') { index++; }
             if (cmd[index] == '\0') throw BasicException();
@@ -132,7 +132,6 @@ void Books::import(int _quantity, const std::string _total_cost, Diary &diarySys
         std::string _price = doubleToString(_totalCost / _quantity);
         strcpy(bookSelect.price, _price.c_str());
         BookDataStore.modifyInfo(bookSelect.ISBN,bookSelect);
-        //    void importBook(std::string _user_id,std::string isbn,std::string _book_name,int _quantity,std::string cost);
         std::string _user_id = std::string(Account::accountLog.userID);
         std::string isbn = std::string(bookSelect.ISBN);
         std::string _book_name = std::string(bookSelect.bookName);
@@ -165,27 +164,27 @@ void Books::defineShowDemand(BooksInf &demandInfo, std::string word, std::string
 
 //只针对modify
 void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string demand) {
-    if (word == "-ISBN") {
-        strcpy(demandInfo.ISBN,demand.c_str());
-    }
-    if (word == "-name") {
-        strcpy(demandInfo.bookName,demand.c_str());
-    }
-    if (word == "-author") {
-        strcpy(demandInfo.author,demand.c_str());
-    }
-    if (word == "-keyword") {
-        int i = 0;
-        while (demand[i] != '\0') {
-            i++;
-            if (demand[i] == '|' || demand[i] == ' ') throw BasicException();
+    try {
+        if (word == "-ISBN") {
+            strcpy(demandInfo.ISBN, demand.c_str());
         }
-        strcpy(demandInfo.keyword,demand.c_str());
-    }
-    if (word == "-price") {
-        if (!checkDouble(demand)) throw BasicException();
-        strcpy(demandInfo.price,demand.c_str());
-    } else {
+        if (word == "-name") {
+            strcpy(demandInfo.bookName, demand.c_str());
+        }
+        if (word == "-author") {
+            strcpy(demandInfo.author, demand.c_str());
+        }
+        if (word == "-keyword") {
+            checkKeyword(demand);
+            strcpy(demandInfo.keyword, demand.c_str());
+        }
+        if (word == "-price") {
+            if (!checkDouble(demand)) throw BasicException();
+            strcpy(demandInfo.price, demand.c_str());
+        } else {
+            throw BasicException();
+        }
+    } catch (BasicException &ex) {
         throw BasicException();
     }
 }
@@ -201,3 +200,27 @@ bool Books::checkDouble(std::string money){
     }
     return true;
 }
+
+bool Books::checkKeyword(std::string keyword) {
+    //[keyword] 包含重复信息段则操作失败
+    if (keyword.length() > 60) return false;
+    int index = 0;
+    std::set<std::string> words;
+    while (keyword[index] != '\0') {
+        int tmp = index;
+        while (keyword[index] != '|') {
+            if (keyword[index] == '"' || keyword[index] == ' ') return false;
+            index++;
+        }
+        char word[index - tmp];
+        for (int i = 0; i < index - tmp; ++i) {
+            word[i] = keyword[tmp + i];
+        }
+        std::string s = std::string(word);
+        if (words.count(s) != 0) return false;
+        words.insert(s);
+        index++;
+    }
+    return true;
+}
+

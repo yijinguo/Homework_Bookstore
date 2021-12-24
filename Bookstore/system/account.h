@@ -10,28 +10,13 @@ struct AccountInf {
     char password[30];
     char userName[30];
 
-    /*AccountInf &operator=(const AccountInf &b) {
-        if (*this == b) return *this;
+    AccountInf operator=(const AccountInf &b){
         priority = b.priority;
         strcpy(userID,b.userID);
         strcpy(password,b.password);
         strcpy(userName,b.userName);
         return *this;
     }
-
-    bool operator==(const AccountInf &b) const {
-        if (priority != b.priority) return false;
-        if (strcmp(userID,b.userID) != 0) return false;
-        if (strcmp(password,b.password) != 0) return false;
-        if (strcmp(userName,b.userName) != 0) return false;
-        return true;
-    }
-
-    friend std::ostream &operator<<(std::ostream &os, const AccountInf &a) {
-        os << a.priority << " " << a.userID << " " << a.password << " " << a.userName << '\n';
-        return os;
-    }*/
-
     void Initialize(){
         strcpy(userID,"root");
         strcpy(password,"sjtu");
@@ -55,14 +40,26 @@ private:
 
 public:
 
-    std::vector<std::string> staffAll;//全体员工:ID索引
-    int staffNum = 0;//记录员工人数
+    static std::vector<std::string> staffAll;//全体员工:ID索引
+    static int staffNum;//记录员工人数
     static bool haveSelect;//记录是否有图书被选中
     static AccountInf accountLog;//只记录最新登陆，进行操作的用户
 
+    static void initialize(){
+        //accountLog = {0, "0", "0", "0"};
+        accountLog.priority = 0;
+        strcpy(accountLog.userID,"0");
+        strcpy(accountLog.password,"0");
+        strcpy(accountLog.userName,"0");
+        staffNum = 0;
+    }
     static void setLog(AccountInf &a){accountLog = a;}
     static void selectTrue(){haveSelect = true;}
     static void selectFalse(){haveSelect = false;}
+    static void addStaff(std::string staffID){
+        staffNum++;
+        staffAll.push_back(staffID);
+    }
 
     Account();
     //登录{0}

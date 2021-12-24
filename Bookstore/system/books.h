@@ -3,7 +3,7 @@
 
 #include "diary.h"
 #include <utility>
-#include <sstream>
+
 
 struct BooksInf {
     char ISBN[20] = "\0";
@@ -46,8 +46,6 @@ class Books {
 private:
     BooksInf bookSelect;
     FileData<BooksInf> BookDataStore;
-    //FileData<BooksInf> BooksName;
-    //FileData<BooksInf> BooksAuthor;
 public:
     Books();
 
@@ -70,6 +68,7 @@ public:
     //用于处理show和modify的多条信息
     void defineShowDemand(BooksInf &demandInfo, std::string word, std::string demand);
     void defineDemand(BooksInf &demandInfo,std::string word, std::string demand);
+    bool checkKeyword(std::string cmd);
     bool checkDouble(std::string money);
     //string-to-double;小数点后仅两位
     static double stringToDouble(std::string demand) {

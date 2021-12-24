@@ -21,13 +21,13 @@ public:
 
 class Quit: public Statement {
 public:
-    Quit(std::string &cmd);
+    explicit Quit(std::string &cmd);
     virtual void execute();
 };
 
 class Exit: public Statement {
 public:
-    Exit(std::string &cmd);
+    explicit Exit(std::string &cmd);
     virtual void execute();
 };
 
