@@ -1,7 +1,7 @@
 #include "statement.h"
 
 Statement::Statement() = default;
-Statement::~Statement() noexcept {}
+Statement::~Statement() noexcept  = default;
 //顺序解析命令语句，得到单词
 Statement::Statement(std::string &cmd):cmdLine(cmd){}
 void Statement::separateCmd(std::string &cmd){
@@ -52,7 +52,7 @@ Su::Su(std::string &cmd,std::string &line){
 void Su::execute() {
     try {
         separateCmd(cmdLine);
-        if (wordNum > 2 && wordNum == 0) throw BasicException();
+        if (wordNum > 2 || wordNum == 0) throw BasicException();
         if (!wordExam(words[0])) throw BasicException();
         if (!wordExam(words[1])) throw BasicException();
         accountSystem.su(words[0], words[1]);
@@ -256,8 +256,7 @@ void Import::execute() {
         for (int i = 0; i < words[1].length(); ++i) {
             if (!(words[1][i] == '.' || words[1][i] >= '0' && words[1][i] <= '9')) throw BasicException();
         }
-        double total_cost = Books::stringToDouble(words[1]);
-        bookSystem.import(_quantity, total_cost,diarySystem);
+        bookSystem.import(_quantity, words[1],diarySystem);
         int priority = Account::accountLog.priority;
         std::string name = std::string(Account::accountLog.userID);
         diarySystem.write(priority, name,diaryLine);
@@ -295,19 +294,14 @@ ShowFinance::ShowFinance(std::string &cmd,std::string &line){
 void ShowFinance::execute() {
     try {
         separateCmd(cmdLine);
-        int time = 0;
         if (wordNum == 1) {
-            time = -1;
-            diarySystem.showFinance(time);
+            diarySystem.showFinance("-1");
         } else if (wordNum == 2) {
             if (words[1].length() > 10) throw BasicException();
-            int place = 1;
             for (int i = 0; i < words[1].length(); ++i) {
                 if (!(words[1][i] >= '0' && words[1][i] <= '9')) throw BasicException();
-                time += place * (words[1][i] - '0');
-                place *= 10;
             }
-            diarySystem.showFinance(time);
+            diarySystem.showFinance(words[1]);
         } else {
             throw BasicException();
         }

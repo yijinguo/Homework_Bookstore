@@ -1,25 +1,22 @@
 #include "account.h"
 
+AccountInf Account::accountLog = {0, "0", "0", "0"};
+
 Account::Account() {
-    accountInStack.initialise("fileInStack");
-    accountDataStore.initialise("fileAllAccount");
+    accountDataStore.initialize("filAllAccountData ","fileAllAccount");
     AccountInf shopkeeper;
     shopkeeper.Initialize();
-    accountDataStore.addInfo(shopkeeper);
-    accountLog.original();
-    accountInStack.addInfo(accountLog);
+    accountDataStore.addInfo("root",shopkeeper);
     selectFalse();
 }
 
 void Account::su(const std::string &_user_id, const std::string &_password){
     try {
-        AccountInf index;
-        strcpy(index.userID, _user_id.c_str());
-        AccountInf accountSu = accountDataStore.readInfo(index);
+        AccountInf accountSu = accountDataStore.readInfo(_user_id);
         if (accountLog.priority <= accountSu.priority) {
             if (strcmp(accountSu.password, _password.c_str()) != 0) throw BasicException();
         }
-        accountInStack.addInfo(accountSu);
+        accountInStack.push(_user_id);
         setLog(accountSu);
     } catch (BasicException &ex) {
         throw BasicException();
@@ -29,9 +26,9 @@ void Account::su(const std::string &_user_id, const std::string &_password){
 void Account::logout(){
     try{
         if (accountLog.priority < 1) throw BasicException();
-        AccountInf another = accountInStack.frontInfo(accountLog);
+        std::string nowInLog = accountInStack.pop();
+        AccountInf another = accountDataStore.readInfo(nowInLog);
         setLog(another);
-        accountInStack.deleteInfo(accountLog);
         selectFalse();
     } catch (BasicException &ex) {
         throw BasicException();
@@ -45,7 +42,7 @@ void Account::Register(const std::string &_user_id, const std::string &_password
         strcpy(newRegister.userID,_user_id.c_str());
         strcpy(newRegister.password,_password.c_str());
         strcpy(newRegister.userName, _user_name.c_str());
-        accountDataStore.addInfo(newRegister);
+        accountDataStore.addInfo(_user_id,newRegister);
     } catch (BasicException &ex) {
         throw BasicException();
     }
@@ -54,14 +51,12 @@ void Account::Register(const std::string &_user_id, const std::string &_password
 void Account::passwd(const std::string &_user_id, const std::string &old_password,const std::string &new_password){
     try {
         if (accountLog.priority < 1) throw BasicException();
-        AccountInf modify;
-        strcpy(modify.userID, _user_id.c_str());
-        modify = accountDataStore.readInfo(modify);
+        AccountInf modify = accountDataStore.readInfo(_user_id);
         if (accountLog.priority != 7) {
             if (modify.password != old_password) throw BasicException();
         }
         strcpy(modify.password, new_password.c_str());
-        accountDataStore.modifyInfo(modify);
+        accountDataStore.modifyInfo(_user_id,modify);
     } catch (BasicException &ex) {
         throw BasicException();
     }
@@ -70,15 +65,16 @@ void Account::passwd(const std::string &_user_id, const std::string &old_passwor
 void Account::Useradd(const std::string &_user_id, const std::string &_password, const int &priority, const std::string &_user_name){
     try {
         if (accountLog.priority < 3 || accountLog.priority <= priority) throw BasicException();
+        if (priority != 1 && priority != 3 && priority != 7) throw BasicException();
         AccountInf newCreate;
         newCreate.priority = priority;
         strcpy(newCreate.userID,_user_id.c_str());
         strcpy(newCreate.password,_password.c_str());
         strcpy(newCreate.userName,_user_name.c_str());
-        accountDataStore.addInfo(newCreate);
+        accountDataStore.addInfo(_user_id,newCreate);
         if (priority == 3) {
             staffNum++;
-            staffAll.push_back(newCreate);
+            staffAll.push_back(_user_id);
         }
     } catch (BasicException &ex) {
         throw BasicException();
@@ -87,11 +83,9 @@ void Account::Useradd(const std::string &_user_id, const std::string &_password,
 
 void Account::deleteAccount(const std::string &_user_id){
     try {
-        if (accountLog.priority < 7) throw BasicException();
-        AccountInf deleteIt;
-        strcpy(deleteIt.userID,_user_id.c_str());
-        if (accountInStack.findInfo(deleteIt)) throw BasicException();
-        accountDataStore.deleteInfo(deleteIt);
+        if (accountLog.priority != 7) throw BasicException();
+        if (accountInStack.InStack(_user_id)) throw BasicException();
+        accountDataStore.deleteInfo(_user_id);
     } catch (BasicException  &ex) {
         throw BasicException();
     }

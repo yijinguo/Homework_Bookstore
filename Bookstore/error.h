@@ -13,4 +13,6 @@ class OutException : public std::exception{};
 /*指令非法或操作失败，输出Invalid*/
 class BasicException : public std::exception{};
 
+/*在图书系统中选中图书，没有符合条件的图书，则创建仅有ISBN信息的图书*/
+class CreateException : public std::exception{};
 #endif //UNTITLED3_ERROR_H
