@@ -29,11 +29,12 @@ struct BooksInf {
         int index = 0;
         while (a.keyword[index] != '\0') {
             int tmp = index;
-            while (a.keyword[index] != '|' && a.keyword[index] != ' ') {index++;}
-            char word[index - tmp];
+            while (a.keyword[index] != '|' && a.keyword[index] != ' ' && a.keyword[index] != '\0') {index++;}
+            char word[index - tmp + 1];
             for (int i = 0; i < index - tmp; ++i) {
                 word[i] = a.keyword[i + tmp];
             }
+            word[index - tmp] = '\0';
             if (strcmp(word,b.keyword) == 0) return true;
             while (a.keyword[index] == ' ' || a.keyword[index] == '|') {index++;}
         }
@@ -69,14 +70,16 @@ public:
     void defineShowDemand(BooksInf &demandInfo, std::string word, std::string demand);
     void defineDemand(BooksInf &demandInfo,std::string word, std::string demand);
     bool checkKeyword(std::string cmd);
-    bool checkDouble(std::string money);
+    std::string checkDouble(std::string money);
     //string-to-double;小数点后仅两位
     static double stringToDouble(std::string demand) {
         int i = 0;
         double result = 0;
+        int place = 1;
         while (demand[i] != '.' && demand[i] != '\0') {i++;}
-        for (int j = i; j >= 1; --j) {
-            result += (demand[i - j] - '0') * (i - j) *10;
+        for (int j = 1; j <= i; ++j) {
+            result += (demand[i - j] - '0') * place;
+            place *= 10;
         }
         if (demand[i] == '.') {
             i++;
@@ -86,9 +89,9 @@ public:
                 if (demand[i + j] == '\0') break;
                 num[j] = demand[i + j] - '0';
             }
-            if (j == 0) {
+            if (j == 1) {
                 result += num[0] * 0.1;
-            } else if (j == 1) {
+            } else if (j == 2) {
                 result += num[0] * 0.1 + num[1] * 0.01;
             } else {
                 result += num[0] * 0.1 + num[1] * 0.01;
@@ -101,10 +104,63 @@ public:
     static std::string doubleToString(double demand){
         std::ostringstream os;
         os << demand;
-        std::string result;
-        result = os.str();
-        return result;
+        std::string str;
+        str = os.str();
+        int dot = -1;
+        for (int i = 0; i < str.length(); ++i) {
+            if (str[i] == '.') {
+                dot = i;
+                break;
+            }
+        }
+        if (dot == -1) {
+            char result[str.length()];
+            for (int i = 0; i < str.length(); ++i) {
+                result[i] = str[i];
+            }
+            result[str.length()] = '.';
+            result[str.length() + 1] = '0';
+            result[str.length() + 2] = '0';
+            result[str.length() + 3] = '\0';
+            std::string s = std::string(result);
+            return s;
+        }
+        if (dot == str.length() - 2) {
+            char result[str.length() + 2];
+            for (int i = 0; i < str.length(); ++i) {result[i] = str[i];}
+            result[str.length()] = '0';
+            result[str.length() + 1] = '\0';
+            std::string s = std::string(result);
+            return s;
+        }
+        if (dot == str.length() - 3) {return str;}
+        if (str[dot + 3] >= 5) {
+            demand += 0.01;
+            std::ostringstream _os;
+            _os << demand;
+            std::string _str;
+            _str = _os.str();
+            char result[dot + 5];
+            int i = 0;
+            while (_str[i] != '.') {
+                result[i] = _str[i];
+                i++;
+            }
+            result[i] = '.';
+            result[i + 1] = _str[i + 1];
+            result[i + 2] = _str[i + 2];
+            result[i + 3] = '\0';
+            std::string s = std::string(result);
+            return s;
+        } else {
+            char result[dot + 4];
+            for (int i = 0; i <= dot + 2; ++i) {result[i] = str[i];}
+            result[dot + 3] = '\0';
+            std::string s = std::string (result);
+            return s;
+        }
     }
+
 };
 
 #endif //UNTITLED3_BOOKS_H

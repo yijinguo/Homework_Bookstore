@@ -1,50 +1,40 @@
 #include "FileData.h"
 
-Stack::Stack(){
-    stackLog.open("fileStackLog");
-}
+Stack::Stack() = default;
 
 Stack::~Stack() {
-    stackLog.close();
-    stackLog.open("fileStackLog",std::fstream::out);
-    stackLog.close();
+    vecStack.clear();
 }
 
 void Stack::push(std::string content){
-    Information newPush;
-    newPush.front = nowLoc;
-    strcpy(newPush.index,content.c_str());
-    lastLoc = nowLoc;
-    stackLog.seekp(0,std::ios::end);
-    nowLoc = stackLog.tellp() / sizeT;
-    stackLog.write(reinterpret_cast<char*>(&newPush),sizeT);
+
+    vecStack.push_back(content);
 }
 
-std::string Stack::pop(){
-    Information last;
-    nowLoc = lastLoc;
-    stackLog.seekg(lastLoc * sizeT);
-    stackLog.read(reinterpret_cast<char*>(&last),sizeT);
-    lastLoc = last.front;
-    return std::string(last.index);
+std::string Stack::pop() {
+    vecStack.pop_back();
+    if (vecStack.empty()) {
+        throw DealException();
+    } else {
+        return vecStack.back();
+    }
 }
 
 bool Stack::judgeNull() const {
-    if (nowLoc == -1) return true;
+    if (vecStack.empty()) return true;
     return false;
 }
 
 bool Stack::InStack(std::string index) {
-    int tmp_nowLoc = nowLoc;
-    Information tmp;
-    while (tmp_nowLoc != -1) {
-        stackLog.seekg(tmp_nowLoc);
-        stackLog.read(reinterpret_cast<char *>(&tmp), sizeT);
-        if (index == std::string(tmp.index)) return true;
-        tmp_nowLoc = tmp.front;
+    auto it = vecStack.begin();
+    while (it != vecStack.end()) {
+        if (*it == index) return true;
+        it++;
     }
     return false;
 }
+
+
 
 
 DiaryRecord::DiaryRecord(){
@@ -127,30 +117,23 @@ void FinanceRecord::addRecord(std::string income, std::string expense){
 void FinanceRecord::printTime(int time){
     if (time > Time) throw BasicException();
     Information print;
-    file.seekg(time * sizeInf);
+    file.seekg((time - 1) * sizeInf);
     file.read(reinterpret_cast<char*>(&print),sizeInf);
     std::cout << "+ " << print.income << " - " << print.expense << '\n';
 }
 
 void FinanceRecord::printAll(){
-    for (int i = 0; i < Time; ++i) {
-        Information print;
-        file.seekg(i * sizeInf);
-        file.read(reinterpret_cast<char*>(&print),sizeInf);
-        std::cout << "+ " << print.income << " - " << print.expense << '\n';
-    }
+    printTime(Time);
 }
 
 
-
-
 TradeRecord::TradeRecord(){
-    tradeRecord.open("fileTradeFile",std::fstream::in);
+    tradeRecord.open("fileTradeRecord",std::fstream::in);
     if (!tradeRecord) {
-        tradeRecord.open("fileTradeFile",std::fstream::out);
+        tradeRecord.open("fileTradeRecord",std::fstream::out);
     }
     tradeRecord.close();
-    tradeRecord.open("fileTradeFile");
+    tradeRecord.open("fileTradeRecord");
 }
 
 TradeRecord::~TradeRecord(){

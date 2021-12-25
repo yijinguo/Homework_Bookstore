@@ -1,17 +1,20 @@
 #include "parser.h"
 
+AccountInf Account::accountLog = {0,"0","0","0"};
+int Account::staffNum = 0;
+bool Account::haveSelect = false;
+std::vector<std::string> Account::staffAll;
+
 using namespace std;
 int main(){
-    //freopen("testcase1.txt","r",stdin);
-    //freopen("gyj.out","w",stdout);
+    //freopen("100.txt","r",stdin);
+    //freopen("gyj.out","a",stdout);
+    Statement stmt;
     while (true) {
         try {
             string cmd;
             getline(cin, cmd);
-            parser cmdP;
-            Statement *stmt = cmdP.parserWord(cmd);
-            stmt->execute();
-            delete stmt;
+            execute(stmt,cmd);
         } catch (BlankLineException &skip) {
             continue;
         } catch (OutException &out) {

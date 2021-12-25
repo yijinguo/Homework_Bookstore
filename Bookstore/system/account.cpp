@@ -1,16 +1,21 @@
 #include "account.h"
 
 Account::Account() {
-    initialize();
-    accountDataStore.initialize("fileAllAccountData ","fileAllAccount");
-    AccountInf shopkeeper;
-    shopkeeper.Initialize();
-    accountDataStore.addInfo("root",shopkeeper);
-    selectFalse();
+    try {
+        initialize();
+        accountDataStore.initialize("fileAllAccountData", "fileAllAccount");
+        AccountInf shopkeeper;
+        shopkeeper.Initialize();
+        accountDataStore.addInfo("root", shopkeeper);
+        selectFalse();
+    } catch (BasicException &ex) {
+        return;
+    }
 }
 
 void Account::su(const std::string &_user_id, const std::string &_password){
     try {
+        if (accountInStack.InStack(_user_id)) throw BasicException();
         AccountInf accountSu = accountDataStore.readInfo(_user_id);
         if (accountLog.priority <= accountSu.priority) {
             if (strcmp(accountSu.password, _password.c_str()) != 0) throw BasicException();
@@ -25,14 +30,18 @@ void Account::su(const std::string &_user_id, const std::string &_password){
 void Account::logout(){
     try{
         if (accountLog.priority < 1) throw BasicException();
-        if (accountInStack.judgeNull()) {
-            accountLog.priority = 0;
-            return;
-        }
+        if (accountInStack.judgeNull()) {throw BasicException();}
         std::string nowInLog = accountInStack.pop();
         AccountInf another = accountDataStore.readInfo(nowInLog);
         setLog(another);
         selectFalse();
+    } catch (DealException &ex) {
+        AccountInf a;
+        a.priority = 0;
+        strcpy(a.userID,"0");
+        strcpy(a.password,"0");
+        strcpy(a.userName,"0");
+        setLog(a);
     } catch (BasicException &ex) {
         throw BasicException();
     }
@@ -85,6 +94,7 @@ void Account::deleteAccount(const std::string &_user_id){
     try {
         if (accountLog.priority != 7) throw BasicException();
         if (accountInStack.InStack(_user_id)) throw BasicException();
+        if (findStaff(_user_id)) deleteStaff(_user_id);
         accountDataStore.deleteInfo(_user_id);
     } catch (BasicException  &ex) {
         throw BasicException();

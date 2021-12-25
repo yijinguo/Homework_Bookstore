@@ -1,14 +1,15 @@
 #include "statement.h"
 
-AccountInf Account::accountLog = {0,"0","0","0"};
-int Account::staffNum = 0;
-bool Account::haveSelect = false;
-std::vector<std::string> Account::staffAll;
-
 Statement::Statement() = default;
 Statement::~Statement() noexcept  = default;
 //顺序解析命令语句，得到单词
-Statement::Statement(std::string &cmd):cmdLine(cmd){}
+void Statement::define(std::string &cmd,std::string &line) {
+    words.clear();
+    wordNum = 0;
+    cmdLine = cmd;
+    diaryLine = line;
+}
+
 void Statement::separateCmd(std::string &cmd){
     words.clear();
     int index = 0;
@@ -29,13 +30,12 @@ void Statement::separateCmd(std::string &cmd){
     }
 }
 
-Quit::Quit(std::string &cmd) : Statement::Statement(cmd){}
-void Quit::execute(){
+
+void Statement::Quit (){
     throw OutException();
 }
 
-Exit::Exit(std::string &cmd) : Statement::Statement(cmd){}
-void Exit::execute() {
+void Statement::Exit () {
     throw OutException();
 }
 
@@ -49,11 +49,8 @@ bool wordExam(std::string word) {
     return true;
 }
 
-Su::Su(std::string &cmd,std::string &line){
-    diaryLine = line;
-    cmdLine = cmd;
-}
-void Su::execute() {
+
+void Statement::Su () {
     try {
         separateCmd(cmdLine);
         if (wordNum > 2 || wordNum == 0) throw BasicException();
@@ -68,13 +65,10 @@ void Su::execute() {
     }
 }
 
-Logout::Logout(std::string &cmd,std::string &line){
-    diaryLine = line;
-    cmdLine = cmd;
-}
-void Logout::execute() {
+
+void Statement::Logout () {
     try {
-        if (!cmdLine.empty()) throw BasicException();
+        if (cmdLine[0] != '\0') throw BasicException();
         accountSystem.logout();
         int priority = Account::accountLog.priority;
         std::string name = std::string(Account::accountLog.userID);
@@ -84,11 +78,8 @@ void Logout::execute() {
     }
 }
 
-Register::Register(std::string &cmd,std::string &line){
-    diaryLine = line;
-    cmdLine = cmd;
-}
-void Register::execute() {
+
+void Statement::Register () {
     try {
         separateCmd(cmdLine);
         if (wordNum != 3) throw BasicException();
@@ -104,11 +95,8 @@ void Register::execute() {
     }
 }
 
-Passwd::Passwd(std::string &cmd, std::string &line) {
-    diaryLine = line;
-    cmdLine = cmd;
-}
-void Passwd::execute() {
+
+void Statement::Passwd () {
     try {
         separateCmd(cmdLine);
         if (wordNum != 2 && wordNum != 3) throw BasicException();
@@ -128,11 +116,8 @@ void Passwd::execute() {
     }
 }
 
-Useradd::Useradd(std::string &cmd, std::string &line){
-    diaryLine = line;
-    cmdLine = cmd;
-}
-void Useradd::execute() {
+
+void Statement::Useradd () {
     try {
         separateCmd(cmdLine);
         if (wordNum != 4) throw BasicException();
@@ -150,11 +135,8 @@ void Useradd::execute() {
     }
 }
 
-Delete::Delete(std::string &cmd, std::string &line){
-    diaryLine = line;
-    cmdLine = cmd;
-}
-void Delete::execute() {
+
+void Statement::Delete () {
     try {
         separateCmd(cmdLine);
         if (wordNum != 1) throw BasicException();
@@ -168,11 +150,8 @@ void Delete::execute() {
     }
 }
 
-Show::Show(std::string &cmd, std::string &line){
-    diaryLine = line;
-    cmdLine = cmd;
-}
-void Show::execute() {
+
+void Statement::Show () {
     try {
         bookSystem.show(cmdLine);
         int priority = Account::accountLog.priority;
@@ -183,11 +162,8 @@ void Show::execute() {
     }
 }
 
-Buy::Buy(std::string &cmd, std::string &line){
-    diaryLine = line;
-    cmdLine = cmd;
-}
-void Buy::execute() {
+
+void Statement::Buy () {
     try {
         separateCmd(cmdLine);
         if (wordNum != 2) throw BasicException();
@@ -195,8 +171,8 @@ void Buy::execute() {
         if (words[1].length() > 10) throw BasicException();
         int _quantity = 0, l = words[1].length(), place = 1;
         for (int i = 1; i <= l; ++i) {
-            if (!(words[1][i] >= '0' && words[1][i] <= '9')) throw BasicException();
-            _quantity += place * words[1][l - i];
+            if (!(words[1][l - i] >= '0' && words[1][l - i] <= '9')) throw BasicException();
+            _quantity += place * (words[1][l - i] - '0');
             place *= 10;
         }
         bookSystem.buy(words[0],_quantity,diarySystem);
@@ -208,11 +184,8 @@ void Buy::execute() {
     }
 }
 
-Select::Select(std::string &cmd, std::string &line){
-    diaryLine = line;
-    cmdLine = cmd;
-}
-void Select::execute() {
+
+void Statement::Select () {
     try {
         separateCmd(cmdLine);
         if (wordNum != 1) throw BasicException();
@@ -226,11 +199,8 @@ void Select::execute() {
     }
 }
 
-Modify::Modify(std::string &cmd, std::string &line){
-    diaryLine = line;
-    cmdLine = cmd;
-}
-void Modify::execute() {
+
+void Statement::Modify () {
     try {
         bookSystem.modify(cmdLine);
         int priority = Account::accountLog.priority;
@@ -241,24 +211,18 @@ void Modify::execute() {
     }
 }
 
-Import::Import(std::string &cmd, std::string &line) {
-    diaryLine = line;
-    cmdLine = cmd;
-}
-void Import::execute() {
+
+void Statement::Import () {
     try {
         separateCmd(cmdLine);
         if (wordNum != 2) throw BasicException();
         if (words[0].length() > 10) throw BasicException();
         if (words[1].length() > 13) throw BasicException();
-        int _quantity = 0, l = words[0].length(),place = 1;
-        for (int i = 1; i <= l; ++i) {
-            if (!(words[0][i] >= '0' && words[0][i] <= '9')) throw BasicException();
-            _quantity += place * words[0][l - i];
+        int _quantity = 0, l = words[0].length() - 1, place = 1;
+        for (int i = 0; i <= l; ++i) {
+            if (!(words[0][l - i] >= '0' && words[0][l - i] <= '9')) throw BasicException();
+            _quantity += place * (words[0][l - i] - '0');
             place *= 10;
-        }
-        for (int i = 0; i < words[1].length(); ++i) {
-            if (!(words[1][i] == '.' || words[1][i] >= '0' && words[1][i] <= '9')) throw BasicException();
         }
         bookSystem.import(_quantity, words[1],diarySystem);
         int priority = Account::accountLog.priority;
@@ -273,11 +237,8 @@ void Import::execute() {
 
 
 //以下注意检查cmd是否只有一个指令词，不为空抛出异常
-ReportMyself::ReportMyself(std::string &cmd,std::string &line){
-    diaryLine = line;
-    cmdLine = cmd;
-}
-void ReportMyself::execute() {
+
+void Statement::ReportMyself () {
     try {
         separateCmd(cmdLine);
         if (wordNum != 1) throw BasicException();
@@ -293,12 +254,9 @@ void ReportMyself::execute() {
     }
 }
 
-ShowFinance::ShowFinance(std::string &cmd,std::string &line){
-    diaryLine = line;
-    cmdLine = cmd;
-}
 
-void ShowFinance::execute() {
+
+void Statement::ShowFinance () {
     try {
         separateCmd(cmdLine);
         if (wordNum == 1) {
@@ -306,7 +264,7 @@ void ShowFinance::execute() {
         } else if (wordNum == 2) {
             if (words[1].length() > 10) throw BasicException();
             int time = 0, place = 1;
-            for (int i = 0; i < words[1].length(); ++i) {
+            for (int i = words[1].length() - 1; i >= 0; --i) {
                 if (!(words[1][i] >= '0' && words[1][i] <= '9')) throw BasicException();
                 time += place * (words[1][i]- '0');
                 place *= 10;
@@ -324,11 +282,7 @@ void ShowFinance::execute() {
 }
 
 
-ReportFinance::ReportFinance(std::string &cmd, std::string &line){
-    diaryLine = line;
-    cmdLine = cmd;
-}
-void ReportFinance::execute() {
+void Statement::ReportFinance () {
     try {
         separateCmd(cmdLine);
         if (wordNum != 1) throw BasicException();
@@ -341,11 +295,8 @@ void ReportFinance::execute() {
     }
 }
 
-ReportEmployee::ReportEmployee(std::string &cmd,std::string &line){
-    diaryLine = line;
-    cmdLine = cmd;
-}
-void ReportEmployee::execute() {
+
+void Statement::ReportEmployee () {
     try {
         separateCmd(cmdLine);
         if (wordNum != 1) throw BasicException();
@@ -358,11 +309,8 @@ void ReportEmployee::execute() {
     }
 }
 
-log::log(std::string &cmd, std::string &line){
-    diaryLine = line;
-    cmdLine = cmd;
-}
-void log::execute() {
+
+void Statement::log () {
     try {
         if (!cmdLine.empty()) throw BasicException();
         diarySystem.LogRecord();

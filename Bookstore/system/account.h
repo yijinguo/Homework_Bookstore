@@ -2,7 +2,7 @@
 #define UNTITLED3_ACCOUNT_H
 
 #include "../FileDataBase/FileData.h"
-#include <vector>
+
 
 struct AccountInf {
     int priority;
@@ -53,13 +53,33 @@ public:
         strcpy(accountLog.userName,"0");
         staffNum = 0;
     }
-    static void setLog(AccountInf &a){accountLog = a;}
+    static void setLog(AccountInf &a){
+        accountLog = a;
+    }
     static void selectTrue(){haveSelect = true;}
     static void selectFalse(){haveSelect = false;}
     static void addStaff(std::string staffID){
         staffNum++;
         staffAll.push_back(staffID);
     }
+    static void deleteStaff(std::string index){
+        auto it = staffAll.begin();
+        while (it != staffAll.end()) {
+            if (*it == index) {
+                staffAll.erase(it);
+                return;
+            }
+            it++;
+        }
+    }
+    static bool findStaff(std::string index){
+        auto it = staffAll.begin();
+        while (it != staffAll.end()) {
+            if (*it == index) return true;
+            it++;
+        }
+        return false;
+    };
 
     Account();
     //登录{0}
