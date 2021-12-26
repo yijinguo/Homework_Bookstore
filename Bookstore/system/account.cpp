@@ -18,6 +18,10 @@ void Account::su(const std::string &_user_id, const std::string &_password){
         AccountInf accountSu = accountDataStore.readInfo(_user_id);
         if (accountLog.priority <= accountSu.priority) {
             if (strcmp(accountSu.password, _password.c_str()) != 0) throw BasicException();
+        } else {
+            if (!_password.empty()) {
+                if (strcmp(accountSu.password, _password.c_str()) != 0) throw BasicException();
+            }
         }
         accountInStack.push(_user_id);
         setLog(accountSu);
@@ -68,6 +72,10 @@ void Account::passwd(const std::string &_user_id, const std::string &old_passwor
         AccountInf modify = accountDataStore.readInfo(_user_id);
         if (accountLog.priority != 7) {
             if (modify.password != old_password) throw BasicException();
+        } else {
+            if (!old_password.empty()) {
+                if (modify.password != old_password) throw BasicException();
+            }
         }
         strcpy(modify.password, new_password.c_str());
         accountDataStore.modifyInfo(_user_id,modify);
