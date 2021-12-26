@@ -182,16 +182,19 @@ void Books::defineShowDemand(BooksInf &demandInfo, std::string word, std::string
         if (word == "-ISBN") {
             BookDataStore.printIndex(demand);
         } else if (word == "-name") {
+            if (demand.length() <= 2) throw DealException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw DealException();
             for (int i = 0; i < demand.length() - 2; ++i) { demand[i] = demand[i + 1]; }
             demand[demand.length() - 2] = '\0';
             BookNameStore.printIndex(BookDataStore,demand);
         } else if (word == "-author") {
+            if (demand.length() <= 2) throw DealException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw DealException();
             for (int i = 0; i < demand.length() - 2; ++i) { demand[i] = demand[i + 1]; }
             demand[demand.length() - 2] = '\0';
             BookAuthorStore.printIndex(BookDataStore,demand);
         } else if (word == "-keyword") {
+            if (demand.length() <= 2) throw DealException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw DealException();
             for (int i = 0; i < demand.length() - 2; ++i) {demand[i] = demand[i + 1];}
             demand[demand.length() - 2] = '\0';
@@ -221,7 +224,8 @@ void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string dema
             strcpy(demandInfo.ISBN, demand.c_str());
             MIndex = true;
         } else if (word == "-name") {
-            if (MBookName) {throw BasicException();}
+            if (MBookName) throw BasicException();
+            if (demand.length() <= 2) throw BasicException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw BasicException();
             for (int i = 0; i < demand.length() - 2; ++i) {
                 demand[i] = demand[i + 1];
@@ -231,6 +235,7 @@ void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string dema
             MBookName = true;
         } else if (word == "-author") {
             if (MAuthor) {throw BasicException();}
+            if (demand.length() <= 2) throw BasicException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw BasicException();
             for (int i = 0; i < demand.length() - 2; ++i) {
                 demand[i] = demand[i + 1];
@@ -239,7 +244,8 @@ void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string dema
             strcpy(demandInfo.author, demand.c_str());
             MAuthor = true;
         } else if (word == "-keyword") {
-            if (MKeyword) {throw BasicException();}
+            if (MKeyword) throw BasicException();
+            if (demand.length() <= 2) throw BasicException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw BasicException();
             for (int i = 0; i < demand.length() - 2; ++i) {demand[i] = demand[i + 1];}
             demand[demand.length() - 2] = '\0';
