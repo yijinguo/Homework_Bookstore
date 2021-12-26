@@ -8,8 +8,8 @@ std::vector<std::string> Account::staffAll;
 
 using namespace std;
 int main(){
-    freopen("7.in","r",stdin);
-    freopen("gyj.out","w",stdout);
+    //freopen("10.in","r",stdin);
+    //freopen("gyj.out","w",stdout);
     Statement stmt;
     string cmd;
     while (getline(cin, cmd)) {
