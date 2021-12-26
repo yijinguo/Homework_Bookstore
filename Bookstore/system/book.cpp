@@ -228,6 +228,7 @@ void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string dema
             if (demand.length() <= 2) throw BasicException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw BasicException();
             for (int i = 0; i < demand.length() - 2; ++i) {
+                if (demand[i + 1] == '"') throw BasicException();
                 demand[i] = demand[i + 1];
             }
             demand[demand.length() - 2] = '\0';
@@ -238,6 +239,7 @@ void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string dema
             if (demand.length() <= 2) throw BasicException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw BasicException();
             for (int i = 0; i < demand.length() - 2; ++i) {
+                if (demand[i + 1] == '"') throw BasicException();
                 demand[i] = demand[i + 1];
             }
             demand[demand.length() - 2] = '\0';
@@ -247,7 +249,10 @@ void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string dema
             if (MKeyword) throw BasicException();
             if (demand.length() <= 2) throw BasicException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw BasicException();
-            for (int i = 0; i < demand.length() - 2; ++i) {demand[i] = demand[i + 1];}
+            for (int i = 0; i < demand.length() - 2; ++i) {
+                if (demand[i + 1] == '"') throw BasicException();
+                demand[i] = demand[i + 1];
+            }
             demand[demand.length() - 2] = '\0';
             if (!checkKeyword(demand)) throw BasicException();
             strcpy(demandInfo.keyword, demand.c_str());
@@ -282,6 +287,7 @@ bool Books::checkKeyword(std::string keyword) {
     //[keyword] 包含重复信息段则操作失败
     if (keyword.length() > 60) return false;
     int index = 0;
+    if (keyword[0] == '|') return false;
     std::set<std::string> words;
     while (keyword[index] != '\0') {
         int tmp = index;
@@ -290,6 +296,7 @@ bool Books::checkKeyword(std::string keyword) {
             if (keyword[index] == '"' || keyword[index] == ' ') return false;
             index++;
         }
+        if (keyword[index] != '\0' && keyword[index + 1] == '|') return false;
         char word[index - tmp + 1];
         for (int i = 0; i < index - tmp; ++i) {
             word[i] = keyword[tmp + i];
@@ -301,6 +308,7 @@ bool Books::checkKeyword(std::string keyword) {
         if (keyword[index] == '\0') break;
         index++;
     }
+    if (keyword[index - 1] == '|') return false;
     return true;
 }
 
