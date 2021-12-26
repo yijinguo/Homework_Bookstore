@@ -18,9 +18,9 @@ public:
     //将某用户的某次操作记录写入文件
     void write(int &priority,std::string &name, std::string &content);
     //收入
-    void buyBook(std::string _user_id,std::string isbn,std::string _book_name,int _quantity,std::string cost);
+    void buyBook(std::string _user_id,std::string isbn,std::string _book_name,int _quantity,double cost);
     //支出
-    void importBook(std::string _user_id,std::string isbn,std::string _book_name,int _quantity,std::string cost);
+    void importBook(std::string _user_id,std::string isbn,std::string _book_name,int _quantity,double cost);
 
     //{3}reportMyself
     void reportMyself(std::string &index);

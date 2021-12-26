@@ -5,14 +5,14 @@ void Diary::write(int &priority,std::string &name, std::string &content){
 }
 
 
-void Diary::buyBook(std::string _user_id, std::string isbn,std::string _book_name,int _quantity,std::string cost) {
+void Diary::buyBook(std::string _user_id, std::string isbn,std::string _book_name,int _quantity,double cost) {
     trade.buyBook(_user_id,isbn,_book_name,_quantity,cost);
-    deal.addRecord(cost,"0");
+    deal.addRecord(cost,0);
 }
 
-void Diary::importBook(std::string _user_id,std::string isbn,std::string _book_name,int _quantity,std::string cost){
+void Diary::importBook(std::string _user_id,std::string isbn,std::string _book_name,int _quantity,double cost){
     trade.importBook(_user_id,isbn,_book_name,_quantity,cost);
-    deal.addRecord("0",cost);
+    deal.addRecord(0,cost);
 }
 
 //根据ID为索引，生成该用户的所有操作

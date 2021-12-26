@@ -37,7 +37,6 @@ void Books::show(std::string cmd) {
             //以上处理指令，word表示要求的信息类型，demand表示具体信息
             std::string _word = std::string(word);
             std::string _demand = std::string(demand);
-            //todo
             defineShowDemand(demandInfo, _word, _demand);
         } else {
             throw BasicException();
@@ -54,11 +53,11 @@ void Books::buy(const std::string &isbn, const int _quantity, Diary &diarySystem
         if (modify.quantity < _quantity) throw BasicException();
         modify.quantity -= _quantity;
         BookDataStore.modifyInfo(isbn,modify);
-        std::string buyCost = doubleToString(_quantity * stringToDouble(modify.price));
-        std::cout << buyCost << '\n';
+        double re = _quantity * modify.price;
+        std::cout << std::fixed << std::setprecision(2) << re << '\n';
         std::string _user_id = std::string(Account::accountLog.userID);
         std::string _book_name = bookSelect.bookName;
-        diarySystem.buyBook(_user_id,isbn,_book_name,_quantity,buyCost);
+        diarySystem.buyBook(_user_id,isbn,_book_name,_quantity,re);
     } catch (BasicException &ex) {
         throw BasicException();
     }
@@ -77,8 +76,8 @@ void Books::select(const std::string isbn){
         strcpy(bookSelect.bookName, "\0");
         strcpy(bookSelect.author,"\0");
         strcpy(bookSelect.keyword, "\0");
-        strcpy(bookSelect.totalCost,"\0");
-        strcpy(bookSelect.price,"0.00");
+        bookSelect.totalCost = 0;
+        bookSelect.price = 0;
         bookSelect.quantity = 0;
     } catch (BasicException &ex) {
         throw BasicException();
@@ -116,7 +115,6 @@ void Books::modify(std::string cmd) {
             if (cmd[index] == '\0') break;
         }
         //现在得到了demandInfo，进行修改
-        //todo
         if (strcmp(bookSelect.ISBN, OldIndex.c_str()) != 0) {//isbn被改
             BookDataStore.modifyIndex(OldIndex, bookSelect.ISBN, bookSelect);
         } else {//isbn未被改
@@ -151,15 +149,12 @@ void Books::import(int _quantity, const std::string _total_cost, Diary &diarySys
     try {
         if (Account::accountLog.priority < 3 || !Account::haveSelect) throw BasicException();
         bookSelect.quantity += _quantity;
-        std::string total_cost = checkDouble(_total_cost);
-        double _totalCost = stringToDouble(total_cost);
-        double oldTotal = stringToDouble(bookSelect.totalCost);
-        strcpy(bookSelect.totalCost, doubleToString(oldTotal + _totalCost).c_str());
+        bookSelect.totalCost += checkDouble(_total_cost);
         BookDataStore.modifyInfo(bookSelect.ISBN,bookSelect);
         std::string _user_id = std::string(Account::accountLog.userID);
         std::string isbn = std::string(bookSelect.ISBN);
         std::string _book_name = std::string(bookSelect.bookName);
-        diarySystem.importBook(_user_id,isbn,_book_name,_quantity,_total_cost);
+        diarySystem.importBook(_user_id,isbn,_book_name,_quantity, stringToDouble(_total_cost));
     } catch (BasicException &ex) {
         throw BasicException();
     }
@@ -230,8 +225,7 @@ void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string dema
             checkKeyword(demand);
             strcpy(demandInfo.keyword, demand.c_str());
         } else if (word == "-price") {
-            std::string s = checkDouble(demand);
-            strcpy(demandInfo.price, s.c_str());
+            demandInfo.price = checkDouble(demand);
         } else {
             throw BasicException();
         }
@@ -240,49 +234,18 @@ void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string dema
     }
 }
 
-//检查一个字符串是否是浮点数，并修改为小数点后两位
-std::string Books::checkDouble(std::string money){
-    int dot = -1;
-    for (int i = 0; i < money.length(); ++i){
+//检查一个字符串是否是浮点数，如果是就修改为double
+double Books::checkDouble(std::string money){
+    bool haveDot = false;
+    for (int i = 0; i < money.length(); ++i) {
         if (money[i] == '.') {
-            if (dot != -1) throw BasicException();
-            dot = i;
-            continue;
+            if (haveDot) throw BasicException();
+            haveDot = true;
+        } else {
+            if (!(money[i] >= '0' && money[i] <= '9')) throw BasicException();
         }
-        if (!(money[i] >= '0' && money[i] <= '9')) throw BasicException();
     }
-    if (dot == -1) {
-        char result[money.length() + 4];
-        for (int i = 0; i < money.length(); ++i) {result[i] = money[i];}
-        result[money.length()] = '.';
-        result[money.length() + 1] = '0';
-        result[money.length() + 2] = '0';
-        result[money.length() + 3] = '\0';
-        std::string s = std::string(result);
-        return s;
-    } else {
-        if (dot == money.length() - 1) throw BasicException();
-        if (dot == money.length() - 2) {
-            char result[money.length() + 2];
-            for (int j = 0; j < money.length(); ++j) {result[j] = money[j];}
-            result[money.length()] = '0';
-            result[money.length() + 1] = '\0';
-            std::string s = std::string(result);
-            return s;
-        }
-        if (dot == money.length() - 3) {return money;}
-        //小数点后位数超过2位，四舍五入
-        //todo
-        //暂时采用舍去策略
-        char result[dot + 4];
-        for (int j = 0; j <= dot + 2; ++j) {
-            result[j] = money[j];
-        }
-        result[dot + 3] = '\0';
-        std::string s = std::string(result);
-        return s;
-    }
-
+    return stringToDouble(money);
 }
 
 bool Books::checkKeyword(std::string keyword) {

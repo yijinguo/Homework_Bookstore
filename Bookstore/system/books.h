@@ -11,14 +11,15 @@ struct BooksInf {
     char author[61] = "\0";
     char keyword[61] = "\0";//记录整段keyword
     int quantity = 0;//库存
-    char price[14] = "0.00";
-    char totalCost[14] = "0.00";//销售总金额
+    double price = 0;
+    double totalCost = 0;//销售总金额
 
     friend std::ostream &operator<<(std::ostream &os, const BooksInf &b) {
-        os << b.ISBN << '\t' << b.bookName << '\t' << b.author << '\t' << b.keyword << '\t' << b.price << '\t'
+        os << b.ISBN << '\t' << b.bookName << '\t' << b.author << '\t' << b.keyword << '\t' << std::fixed << std::setprecision(2) << b.price << '\t'
            << b.quantity << '\n';
         return os;
     }
+
 
     //专门为show而写
     friend bool operator-(BooksInf &a,BooksInf &b) {
@@ -76,8 +77,8 @@ public:
     void defineShowDemand(BooksInf &demandInfo, std::string word, std::string demand);
     void defineDemand(BooksInf &demandInfo,std::string word, std::string demand);
     bool checkKeyword(std::string cmd);
-    std::string checkDouble(std::string money);
-    //string-to-double;小数点后仅两位
+    double checkDouble(std::string money);
+    //string-to-double
     static double stringToDouble(std::string demand) {
         int i = 0;
         double result = 0;
@@ -88,85 +89,18 @@ public:
             place *= 10;
         }
         if (demand[i] == '.') {
-            i++;
-            int num[3];
-            int j = 0;
-            for (; j < 3; ++j) {
-                if (demand[i + j] == '\0') break;
-                num[j] = demand[i + j] - '0';
-            }
-            if (j == 1) {
-                result += num[0] * 0.1;
-            } else if (j == 2) {
-                result += num[0] * 0.1 + num[1] * 0.01;
-            } else {
-                result += num[0] * 0.1 + num[1] * 0.01;
-                if (num[2] >= 5) {result += 0.01;}
+            double p = 0.1;
+            for (int j = i + 1; j < demand.length(); ++j) {
+                result += (demand[j] - '0') * p;
+                p *= 0.1;
             }
         }
         return result;
-    }
-    //double-to-string
-    static std::string doubleToString(double demand){
-        std::ostringstream os;
-        os << demand;
-        std::string str;
-        str = os.str();
-        int dot = -1;
-        for (int i = 0; i < str.length(); ++i) {
-            if (str[i] == '.') {
-                dot = i;
-                break;
-            }
-        }
-        if (dot == -1) {
-            char result[str.length()];
-            for (int i = 0; i < str.length(); ++i) {
-                result[i] = str[i];
-            }
-            result[str.length()] = '.';
-            result[str.length() + 1] = '0';
-            result[str.length() + 2] = '0';
-            result[str.length() + 3] = '\0';
-            std::string s = std::string(result);
-            return s;
-        }
-        if (dot == str.length() - 2) {
-            char result[str.length() + 2];
-            for (int i = 0; i < str.length(); ++i) {result[i] = str[i];}
-            result[str.length()] = '0';
-            result[str.length() + 1] = '\0';
-            std::string s = std::string(result);
-            return s;
-        }
-        if (dot == str.length() - 3) {return str;}
-        if (str[dot + 3] >= 5) {
-            demand += 0.01;
-            std::ostringstream _os;
-            _os << demand;
-            std::string _str;
-            _str = _os.str();
-            char result[dot + 5];
-            int i = 0;
-            while (_str[i] != '.') {
-                result[i] = _str[i];
-                i++;
-            }
-            result[i] = '.';
-            result[i + 1] = _str[i + 1];
-            result[i + 2] = _str[i + 2];
-            result[i + 3] = '\0';
-            std::string s = std::string(result);
-            return s;
-        } else {
-            char result[dot + 4];
-            for (int i = 0; i <= dot + 2; ++i) {result[i] = str[i];}
-            result[dot + 3] = '\0';
-            std::string s = std::string (result);
-            return s;
-        }
     }
 
 };
 
 #endif //UNTITLED3_BOOKS_H
+
+
+//<<fixed<<setprecision(2)<<

@@ -87,13 +87,13 @@ void DiaryRecord::clear(){
 FinanceRecord::FinanceRecord(){
     Information initial;
     initial.time = 0;
-    strcpy(initial.income, "0.00");
-    strcpy(initial.expense,"0.00");
+    initial.income = 0;
+    initial.expense = 0;
     file.open("fileFinanceRecord",std::fstream::in);
     if (!file) {
         Time = 0;
-        strcpy(inAll, "0.00");
-        strcpy(outAll,"0.00");
+        inAll = 0;
+        outAll = 0;
         file.open("fileFinanceRecord",std::fstream::out);
         file.write(reinterpret_cast<char*>(&initial),sizeInf);
         file.close();
@@ -101,8 +101,8 @@ FinanceRecord::FinanceRecord(){
         file.read(reinterpret_cast<char*>(&initial), sizeInf);
         file.close();
         Time = initial.time;
-        strcpy(inAll,initial.income);
-        strcpy(outAll, initial.expense);
+        inAll = initial.income;
+        outAll = initial.expense;
     }
     file.open("fileFinanceRecord");
 }
@@ -110,23 +110,21 @@ FinanceRecord::FinanceRecord(){
 FinanceRecord::~FinanceRecord(){
     Information last;
     last.time = Time;
-    strcpy(last.income,inAll);
-    strcpy(last.expense,outAll);
+    last.income = inAll;
+    last.expense = outAll;
     file.seekp(0);
     file.write(reinterpret_cast<char*>(&last),sizeInf);
     file.close();
 }
 
-void FinanceRecord::addRecord(std::string income, std::string expense){
+void FinanceRecord::addRecord(double income, double expense){
     Information add;
     Time++;
     add.time = Time;
-    strcpy(add.income, income.c_str());
-    strcpy(add.expense, expense.c_str());
-    double in_all = stringToDouble(inAll) + stringToDouble(income);
-    double out_all = stringToDouble(outAll) + stringToDouble(expense);
-    strcpy(inAll, doubleToString(in_all).c_str());
-    strcpy(outAll, doubleToString(out_all).c_str());
+    add.income = income;
+    add.expense = expense;
+    inAll += add.income;
+    outAll += add.expense;
     file.seekp(0, std::ios::end);
     file.write(reinterpret_cast<char*>(&add),sizeInf);
 }
@@ -138,12 +136,10 @@ void FinanceRecord::printTime(int time){
         Information tmp;
         file.seekg((Time - i + 1) * sizeInf);
         file.read(reinterpret_cast<char*>(&tmp),sizeInf);
-        incomeAll += stringToDouble(tmp.income);
-        expenseAll += stringToDouble(tmp.expense);
+        incomeAll += tmp.income;
+        expenseAll += tmp.expense;
     }
-    std::string in = doubleToString(incomeAll);
-    std::string out = doubleToString(expenseAll);
-    std::cout << "+ " << in << " - " << out << '\n';
+    std::cout << "+ " << std::fixed << std::setprecision(2) << incomeAll << " - " << std::fixed << std::setprecision(2) << expenseAll << '\n';
 }
 
 void FinanceRecord::printAll(){
@@ -164,16 +160,15 @@ TradeRecord::~TradeRecord(){
     tradeRecord.close();
 }
 
-void TradeRecord::buyBook(std::string _user_id, std::string isbn,std::string _book_name,int _quantity,std::string cost){
-    tradeRecord << _user_id << " buy " << isbn << " " << _book_name << " " << _quantity << " " << cost << '\n';
+void TradeRecord::buyBook(std::string _user_id, std::string isbn,std::string _book_name,int _quantity,double cost){
+    tradeRecord << _user_id << " buy " << isbn << " " << _book_name << " " << _quantity << " " << std::fixed << std::setprecision(2) << cost << '\n';
 }
 
-void TradeRecord::importBook(std::string _user_id,std::string isbn,std::string _book_name,int _quantity,std::string cost){
-    tradeRecord << _user_id << " import " << isbn << " " << _book_name << " " << _quantity << " " << cost << '\n';
+void TradeRecord::importBook(std::string _user_id,std::string isbn,std::string _book_name,int _quantity,double cost){
+    tradeRecord << _user_id << " import " << isbn << " " << _book_name << " " << _quantity << " " << std::fixed << std::setprecision(2) << cost << '\n';
 }
 
 void TradeRecord::writeTotal(FinanceRecord &a){
-
     tradeRecord << a.Time << "  + " << a.inAll << " - " << a.outAll << '\n';
 }
 

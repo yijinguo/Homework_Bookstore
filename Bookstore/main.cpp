@@ -1,15 +1,15 @@
 #include "parser.h"
 #include <fstream>
+
 AccountInf Account::accountLog = {0,"0","0","0"};
 int Account::staffNum = 0;
 bool Account::haveSelect = false;
 std::vector<std::string> Account::staffAll;
 
-
 using namespace std;
 int main(){
-    //freopen("testcase5.txt","r",stdin);
-    //freopen("gyj.out","w",stdout);
+    freopen("7.in","r",stdin);
+    freopen("gyj.out","w",stdout);
     Statement stmt;
     string cmd;
     while (getline(cin, cmd)) {

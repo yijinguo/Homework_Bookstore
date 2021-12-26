@@ -9,6 +9,7 @@
 #include <sstream>
 #include "../error.h"
 #include <vector>
+#include <iomanip>
 
 //用这个文件保存地址，起到索引作用
 template<class T>
@@ -665,8 +666,8 @@ class FinanceRecord{
 private:
     struct Information{
         int time;
-        char income[14];
-        char expense[14];
+        double income;
+        double expense;
     };
 
     int sizeInf = sizeof(Information);
@@ -675,22 +676,22 @@ private:
 public:
 
     int Time;//目前交易总笔数
-    char inAll[14];
-    char outAll[14];
+    double inAll;
+    double outAll;
 
 
     FinanceRecord();
 
     ~FinanceRecord();
     //写入记录
-    void addRecord(std::string income, std::string expense);
+    void addRecord(double income, double expense);
     //返回int处记录,直接输出;
     //注意抛出异常
     void printTime(int time);
     //返回全记录
     void printAll();
 
-    //string-to-double;小数点后仅两位
+    //string-to-double
     static double stringToDouble(std::string demand) {
         int i = 0;
         double result = 0;
@@ -701,84 +702,15 @@ public:
             place *= 10;
         }
         if (demand[i] == '.') {
-            i++;
-            int num[3];
-            int j = 0;
-            for (; j < 3; ++j) {
-                if (demand[i + j] == '\0') break;
-                num[j] = demand[i + j] - '0';
-            }
-            if (j == 1) {
-                result += num[0] * 0.1;
-            } else if (j == 2) {
-                result += num[0] * 0.1 + num[1] * 0.01;
-            } else {
-                result += num[0] * 0.1 + num[1] * 0.01;
-                if (num[2] >= 5) {result += 0.01;}
+            double p = 0.1;
+            for (int j = i + 1; j < demand.length(); ++j) {
+                result += (demand[j] - '0') * p;
+                p *= 0.1;
             }
         }
         return result;
     }
-    //double-to-string
-    static std::string doubleToString(double demand){
-        std::ostringstream os;
-        os << demand;
-        std::string str;
-        str = os.str();
-        int dot = -1;
-        for (int i = 0; i < str.length(); ++i) {
-            if (str[i] == '.') {
-                dot = i;
-                break;
-            }
-        }
-        if (dot == -1) {
-            char result[str.length()];
-            for (int i = 0; i < str.length(); ++i) {
-                result[i] = str[i];
-            }
-            result[str.length()] = '.';
-            result[str.length() + 1] = '0';
-            result[str.length() + 2] = '0';
-            result[str.length() + 3] = '\0';
-            std::string s = std::string(result);
-            return s;
-        }
-        if (dot == str.length() - 2) {
-            char result[str.length() + 2];
-            for (int i = 0; i < str.length(); ++i) {result[i] = str[i];}
-            result[str.length()] = '0';
-            result[str.length() + 1] = '\0';
-            std::string s = std::string(result);
-            return s;
-        }
-        if (dot == str.length() - 3) {return str;}
-        if (str[dot + 3] >= 5) {
-            demand += 0.01;
-            std::ostringstream _os;
-            _os << demand;
-            std::string _str;
-            _str = _os.str();
-            char result[dot + 5];
-            int i = 0;
-            while (_str[i] != '.') {
-                result[i] = _str[i];
-                i++;
-            }
-            result[i] = '.';
-            result[i + 1] = _str[i + 1];
-            result[i + 2] = _str[i + 2];
-            result[i + 3] = '\0';
-            std::string s = std::string(result);
-            return s;
-        } else {
-            char result[dot + 4];
-            for (int i = 0; i <= dot + 2; ++i) {result[i] = str[i];}
-            result[dot + 3] = '\0';
-            std::string s = std::string (result);
-            return s;
-        }
-    }
+
 };
 
 
@@ -789,10 +721,30 @@ private:
 public:
     TradeRecord();
     ~TradeRecord();
-    void buyBook(std::string _user_id, std::string isbn,std::string _book_name,int _quantity,std::string cost);
-    void importBook(std::string _user_id,std::string isbn,std::string _book_name,int _quantity,std::string cost);
+    void buyBook(std::string _user_id, std::string isbn,std::string _book_name,int _quantity,double cost);
+    void importBook(std::string _user_id,std::string isbn,std::string _book_name,int _quantity,double cost);
     //在目前的文件基础上加上一行交易总额记录
     void writeTotal(FinanceRecord &a);
+    //string-to-double
+    static double stringToDouble(std::string demand) {
+        int i = 0;
+        double result = 0;
+        int place = 1;
+        while (demand[i] != '.' && demand[i] != '\0') {i++;}
+        for (int j = 1; j <= i; ++j) {
+            result += (demand[i - j] - '0') * place;
+            place *= 10;
+        }
+        if (demand[i] == '.') {
+            double p = 0.1;
+            for (int j = i + 1; j < demand.length(); ++j) {
+                result += (demand[j] - '0') * p;
+                p *= 0.1;
+            }
+        }
+        return result;
+    }
+
 };
 
 
