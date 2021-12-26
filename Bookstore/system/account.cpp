@@ -15,7 +15,6 @@ Account::Account() {
 
 void Account::su(const std::string &_user_id, const std::string &_password){
     try {
-        if (accountInStack.InStack(_user_id)) throw BasicException();
         AccountInf accountSu = accountDataStore.readInfo(_user_id);
         if (accountLog.priority <= accountSu.priority) {
             if (strcmp(accountSu.password, _password.c_str()) != 0) throw BasicException();
@@ -27,14 +26,15 @@ void Account::su(const std::string &_user_id, const std::string &_password){
     }
 }
 
-void Account::logout(){
+std::string Account::logout(){
     try{
         if (accountLog.priority < 1) throw BasicException();
         if (accountInStack.judgeNull()) {throw BasicException();}
-        std::string nowInLog = accountInStack.pop();
-        AccountInf another = accountDataStore.readInfo(nowInLog);
+        account nowInLog = accountInStack.pop();
+        AccountInf another = accountDataStore.readInfo(nowInLog.accountName);
         setLog(another);
         selectFalse();
+        return nowInLog.bookISBN;
     } catch (DealException &ex) {
         AccountInf a;
         a.priority = 0;
@@ -42,6 +42,8 @@ void Account::logout(){
         strcpy(a.password,"0");
         strcpy(a.userName,"0");
         setLog(a);
+        std::string s = "\0";
+        return s;
     } catch (BasicException &ex) {
         throw BasicException();
     }

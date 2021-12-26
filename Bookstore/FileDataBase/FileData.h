@@ -615,14 +615,16 @@ public:
 };
 
 
-
+struct account{
+    std::string accountName = "\0";
+    std::string bookISBN = "\0";
+};
 
 //用文件实现一个登录栈
 class Stack {
 private:
 
-    std::vector<std::string> vecStack;
-
+    std::vector<account> vecStack;//账户
 
 public:
 
@@ -634,13 +636,22 @@ public:
     void push(std::string content);
 
     //将一个元素拿出栈,返回当前栈内最末元素
-    std::string pop();
+    account pop();
 
     //判断是否为空栈
     bool judgeNull() const;
 
     //判断某索引是否在栈内
     bool InStack(std::string index);
+
+    //把某索引从栈中取出
+    void erase(std::string index);
+
+    //是否选中图书
+    bool selectBook();
+
+    //修改选中图书
+    void modifyBook(const std::string &ISBN);
 
 };
 

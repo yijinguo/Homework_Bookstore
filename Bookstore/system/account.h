@@ -35,11 +35,11 @@ class Account {
 
 private:
 
-    Stack accountInStack;//登录栈应该只保ID，从栈中提取时再从DataStore中提取
     FileData<AccountInf> accountDataStore;
 
 public:
 
+    static Stack accountInStack;//登录栈应该只保ID，从栈中提取时再从DataStore中提取
     static std::vector<std::string> staffAll;//全体员工:ID索引
     static int staffNum;//记录员工人数
     static bool haveSelect;//记录是否有图书被选中
@@ -81,11 +81,13 @@ public:
         return false;
     };
 
+
+
     Account();
     //登录{0}
     void su(const std::string &_user_id, const std::string &_password);
     //登出{1}
-    void logout();
+    std::string logout();
     //注册{0}
     void Register(const std::string &_user_id, const std::string &_password, const std::string &_user_name);
     //修改密码{1}

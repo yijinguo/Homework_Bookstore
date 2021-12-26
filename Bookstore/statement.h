@@ -35,6 +35,7 @@ public:
     void ReportFinance();
     void ReportEmployee();
     void log();
+
 };
 
 

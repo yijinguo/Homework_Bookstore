@@ -18,6 +18,7 @@ void Diary::importBook(std::string _user_id,std::string isbn,std::string _book_n
 //根据ID为索引，生成该用户的所有操作
 //{3}reportMyself
 void Diary::reportMyself(std::string &userID){
+    if (Account::accountLog.priority < 3) throw BasicException();
     diary.clear();
     diary.returnIndex(userID);
 }
@@ -26,6 +27,7 @@ void Diary::reportMyself(std::string &userID){
 //{7}财务记录查询
 void Diary::showFinance(int time) {
     try {
+        if (Account::accountLog.priority != 7) throw BasicException();
         if (time == -1) {
             deal.printAll();
         } else if (time == 0) {
@@ -40,11 +42,13 @@ void Diary::showFinance(int time) {
 
 //{7}生成财务记录报告
 void Diary::reportFinance(){
+    if (Account::accountLog.priority != 7) throw BasicException();
     trade.writeTotal(deal);
 }
 
 //{7}生成全体员工工作情况报告
 void Diary::reportEmployee(){
+    if (Account::accountLog.priority != 7) throw BasicException();
     for (int i = 0; i < Account::staffNum; ++i) {
         diary.returnIndex(Account::staffAll[i]);
     }
@@ -52,5 +56,6 @@ void Diary::reportEmployee(){
 
 //{7}生成日志
 void Diary::LogRecord(){
+    if (Account::accountLog.priority != 7) throw BasicException();
     trade.writeTotal(deal);
 }

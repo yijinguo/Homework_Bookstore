@@ -69,7 +69,11 @@ void Statement::Su () {
 void Statement::Logout () {
     try {
         if (cmdLine[0] != '\0') throw BasicException();
-        accountSystem.logout();
+        std::string s = accountSystem.logout();
+        if (s[0] != '\0') {
+            Account::selectTrue();
+            bookSystem.select(s);
+        }
         int priority = Account::accountLog.priority;
         std::string name = std::string(Account::accountLog.userID);
         diarySystem.write(priority, name,diaryLine);

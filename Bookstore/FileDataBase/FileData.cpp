@@ -7,11 +7,12 @@ Stack::~Stack() {
 }
 
 void Stack::push(std::string content){
-
-    vecStack.push_back(content);
+    account a;
+    a.accountName = content;
+    vecStack.push_back(a);
 }
 
-std::string Stack::pop() {
+account Stack::pop() {
     vecStack.pop_back();
     if (vecStack.empty()) {
         throw DealException();
@@ -28,13 +29,35 @@ bool Stack::judgeNull() const {
 bool Stack::InStack(std::string index) {
     auto it = vecStack.begin();
     while (it != vecStack.end()) {
-        if (*it == index) return true;
+        if (it->accountName == index) return true;
         it++;
     }
     return false;
 }
 
+void Stack::erase(std::string index){
+    auto it = vecStack.begin();
+    while (it != vecStack.end()) {
+        if (it->accountName == index) {
+            vecStack.erase(it);
+            return;
+        }
+        it++;
+    }
+}
 
+bool Stack::selectBook(){
+    account a = vecStack.back();
+    if (a.bookISBN == "\0") return false;
+    return true;
+}
+
+void Stack::modifyBook(const std::string &ISBN){
+    account a = vecStack.back();
+    a.bookISBN = ISBN;
+    vecStack.pop_back();
+    vecStack.push_back(a);
+}
 
 
 DiaryRecord::DiaryRecord(){

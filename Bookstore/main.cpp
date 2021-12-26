@@ -5,11 +5,12 @@ AccountInf Account::accountLog = {0,"0","0","0"};
 int Account::staffNum = 0;
 bool Account::haveSelect = false;
 std::vector<std::string> Account::staffAll;
+Stack Account::accountInStack;
 
 using namespace std;
 int main(){
-    //freopen("10.in","r",stdin);
-    //freopen("gyj.out","w",stdout);
+    freopen("3.in","r",stdin);
+    freopen("gyj.out","w",stdout);
     Statement stmt;
     string cmd;
     while (getline(cin, cmd)) {

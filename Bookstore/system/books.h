@@ -48,13 +48,16 @@ struct BooksInf {
 
 class Books {
 private:
-    BooksInf bookSelect;
+
     FileData<BooksInf> BookDataStore;
     DoubleIndex<BooksInf> BookNameStore;
     DoubleIndex<BooksInf> BookAuthorStore;
     //DoubleIndex<BooksInf> BookKeywordStore;
 
 public:
+
+    BooksInf bookSelect;
+
     Books();
 
     //以ISBN字典升序依次输出满足要求的图书信息{1}

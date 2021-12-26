@@ -68,6 +68,7 @@ void Books::select(const std::string isbn){
         if (Account::accountLog.priority < 3) throw BasicException();
         if (!Account::haveSelect) Account::selectTrue();
         bookSelect = BookDataStore.findInfo(isbn);
+        Account::accountInStack.modifyBook(isbn);
     } catch (CreateException &ex) {
         BooksInf newCreate;
         strcpy(newCreate.ISBN,isbn.c_str());
@@ -79,6 +80,7 @@ void Books::select(const std::string isbn){
         bookSelect.totalCost = 0;
         bookSelect.price = 0;
         bookSelect.quantity = 0;
+        Account::accountInStack.modifyBook(isbn);
     } catch (BasicException &ex) {
         throw BasicException();
     }
