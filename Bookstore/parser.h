@@ -8,13 +8,8 @@ static std::string takeFirstWord(std::string &cmd){
     int index = 0;
     int firstWordIndex;
     std::string firstWord;
-    bool haveBlank = false;
-    while (cmd[index] == ' ') {
-        haveBlank = true;
-        ++index;
-    }
+    while (cmd[index] == ' ') {++index;}
     if (cmd[index] != '\0') {
-        if (haveBlank) throw BasicException();
         firstWordIndex = index;
         while (cmd[index] != ' ' && cmd[index] != '\0') {++index;}
         char word[index - firstWordIndex + 1];
@@ -52,7 +47,6 @@ void execute(Statement &stmt, std::string &cmd) {
         if (cmd.length() > 1024) throw BasicException();
         std::string line = cmd;
         std::string order = takeFirstWord(cmd);
-        if (cmd[cmd.length() - 1] == ' ') throw BasicException();
         if (order == "quit") {
             stmt.Quit();
         } else if (order == "exit") {

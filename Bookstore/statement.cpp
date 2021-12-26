@@ -55,8 +55,14 @@ void Statement::Su () {
         separateCmd(cmdLine);
         if (wordNum > 2 || wordNum == 0) throw BasicException();
         if (!wordExam(words[0])) throw BasicException();
-        if (!wordExam(words[1])) throw BasicException();
-        accountSystem.su(words[0], words[1]);
+        std::string second;
+        if (wordNum == 2) {
+            if (!wordExam(words[1])) throw BasicException();
+            second = words[1];
+        } else {
+            second = "";
+        }
+        accountSystem.su(words[0], second);
         int priority = Account::accountLog.priority;
         std::string name = std::string(Account::accountLog.userID);
         diarySystem.write(priority, name,diaryLine);
