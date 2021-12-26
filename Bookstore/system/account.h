@@ -6,9 +6,9 @@
 
 struct AccountInf {
     int priority;
-    char userID[30];
-    char password[30];
-    char userName[30];
+    char userID[31];
+    char password[31];
+    char userName[31];
 
     AccountInf operator=(const AccountInf &b){
         priority = b.priority;

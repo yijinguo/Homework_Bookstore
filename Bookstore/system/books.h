@@ -6,13 +6,13 @@
 
 
 struct BooksInf {
-    char ISBN[20] = "\0";
-    char bookName[60] = "\0";
-    char author[60] = "\0";
-    char keyword[60] = "\0";//记录整段keyword
+    char ISBN[21] = "\0";
+    char bookName[61] = "\0";
+    char author[61] = "\0";
+    char keyword[61] = "\0";//记录整段keyword
     int quantity = 0;//库存
-    char price[13] = "0.00";
-    char totalCost[13] = "0.00";//销售总金额
+    char price[14] = "0.00";
+    char totalCost[14] = "0.00";//销售总金额
 
     friend std::ostream &operator<<(std::ostream &os, const BooksInf &b) {
         os << b.ISBN << '\t' << b.bookName << '\t' << b.author << '\t' << b.keyword << '\t' << b.price << '\t'
@@ -43,10 +43,16 @@ struct BooksInf {
 
 };
 
+
+
 class Books {
 private:
     BooksInf bookSelect;
     FileData<BooksInf> BookDataStore;
+    DoubleIndex<BooksInf> BookNameStore;
+    DoubleIndex<BooksInf> BookAuthorStore;
+    //DoubleIndex<BooksInf> BookKeywordStore;
+
 public:
     Books();
 

@@ -41,7 +41,7 @@ void Statement::Exit () {
 
 /*检查仅含有数字，字母，下划线*/
 bool wordExam(std::string word) {
-    if (word.length() >= 30) throw BasicException();
+    if (word.length() > 30) throw BasicException();
     for (int i = 0; i < word.length(); ++i) {
         char s = word[i];
         if (!(s == '_' || s >= '0' && s <= '9' || s >= 'a' && s <= 'z' || s >= 'A' && s <= 'Z')) return false;

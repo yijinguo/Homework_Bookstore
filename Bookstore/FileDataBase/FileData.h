@@ -19,7 +19,7 @@ private:
         char index[30];
         int Loc;
 
-        void Initialize(std::string _index, int _Loc) {
+        void Initialize(std::string &_index, int _Loc) {
             strcpy(index, _index.c_str());
             Loc = _Loc;
         }
@@ -304,6 +304,38 @@ public:
         throw CreateException();
     }
 
+    void printIndex(std::string index) {
+        T result;
+        if (head == -1) throw BasicException();
+        Information readInf;
+        strcpy(readInf.index, index.c_str());
+        int nodLoc;
+        Node nodNow;
+        nodNow.next = head;
+        while (nodNow.next != -1) {
+            nodLoc = nodNow.next;
+            dataFile.seekg(nodNow.next * sizeNod + sizeof(int));
+            dataFile.read(reinterpret_cast<char *>(&nodNow), sizeNod);
+            if (nodNow.num == 0) continue;
+            if (readInf < nodNow.array[0]) throw BasicException();
+            if (readInf > nodNow.array[nodNow.num - 1]) continue;
+            //可能在该节点内
+            if (nodNow.num == 1) {
+                file.seekg(nodNow.array[0].Loc * sizeT);
+                file.read(reinterpret_cast<char*>(&result),sizeT);
+                std::cout << result;
+                return;
+            }
+            int n = std::lower_bound(nodNow.array, nodNow.array + nodNow.num, readInf) - nodNow.array;
+            if (nodNow.array[n] != readInf) throw BasicException();
+            file.seekg(nodNow.array[n].Loc * sizeT);
+            file.read(reinterpret_cast<char*>(&result),sizeT);
+            std::cout << result;
+            return;
+        }
+        throw BasicException();
+    }
+
     //索引字典序输出所有图书
     void printAllInfo(){
         int nodLoc;
@@ -344,6 +376,244 @@ public:
         if (!have) std::cout << '\n';
     }
 };
+
+template<class T>
+class DoubleIndex{
+private:
+    struct Information {
+        char index[31];
+        char value[31];
+
+        void Initialize(std::string &_index, std::string &_value) {
+            strcpy(index, _index.c_str());
+            strcpy(value,_value.c_str());
+        }
+
+        bool operator<(const Information &b) const {
+            if (strcmp(index, b.index) < 0) return true;
+            if (strcmp(index, b.index) > 0) return false;
+            if (strcmp(value,b.value) < 0) return true;
+            return false;
+        }
+
+        bool operator>(const Information &b) const {
+            if (strcmp(index, b.index) > 0) return true;
+            if (strcmp(index, b.index) < 0) return false;
+            if (strcmp(value,b.value) > 0) return true;
+            return false;
+        }
+
+        bool operator<=(const Information &b) const {
+            if (strcmp(index, b.index) < 0) return true;
+            if (strcmp(index, b.index) > 0) return false;
+            if (strcmp(value,b.value) <= 0) return true;
+            return false;
+        }
+
+        bool operator>=(const Information &b) const {
+            if (strcmp(index, b.index) > 0) return true;
+            if (strcmp(index, b.index) < 0) return false;
+            if (strcmp(value,b.value) >= 0) return true;
+            return false;
+        }
+
+        bool operator==(const Information &b) {
+            if (strcmp(index, b.index) != 0) return false;
+            if (strcmp(value,b.value) != 0) return false;
+            return true;
+        }
+
+        bool operator!=(const Information &b) {
+            if (strcmp(index, b.index) != 0) return true;
+            if (strcpy(value,b.value) != 0) return true;
+            return false;
+        }
+    };
+
+    struct Node {
+        int num;
+        int next;
+        Information array[MAXSIZE];
+
+        void Initialized(std::string index, std::string value) {
+            num = 1;
+            next = -1;
+            Information initial;
+            initial.Initialize(index,value);
+            array[0] = initial;
+        }
+    };
+
+    int head = -1;
+    int sizeNod = sizeof(Node);
+    std::fstream dataFile;
+
+public:
+
+    DoubleIndex() = default;
+
+    void initialize(std::string fileName){
+        dataFile.open(fileName,std::ostream::in);
+        if (!dataFile) {
+            dataFile.open(fileName,std::ostream::out);
+            dataFile.write(reinterpret_cast<char*>(&head), sizeof(int));
+        } else {
+            dataFile.seekg(0);
+            dataFile.read(reinterpret_cast<char*>(&head), sizeof(int));
+        }
+        dataFile.close();
+        dataFile.open(fileName);
+    }
+
+    ~DoubleIndex() {
+        dataFile.seekp(0);
+        dataFile.write(reinterpret_cast<char *>(&head), sizeof(int));
+        dataFile.close();
+    }
+
+    void addInfo(std::string index, std::string value) {
+        Information newInsert;
+        newInsert.Initialize(index, value);
+        if (head == -1) {
+            dataFile.seekp(0,std::ios::end);
+            long long newHead = dataFile.tellp();
+            head = (newHead - sizeof(int)) / sizeNod;
+            Node headNod;
+            headNod.Initialized(index, value);
+            dataFile.write(reinterpret_cast<char *>(&headNod), sizeNod);
+            return;
+        }
+        Node nodNow;
+        int nodLoc;
+        nodNow.next = head;
+        while (nodNow.next != -1) {
+            nodLoc = nodNow.next;
+            dataFile.seekg(nodNow.next * sizeNod + sizeof(int));
+            dataFile.read(reinterpret_cast<char *>(&nodNow), sizeNod);
+            if (nodNow.num == 0) continue;
+            if (newInsert > nodNow.array[nodNow.num - 1] && nodNow.next != -1) continue;
+            //nodNow.array[nodNow.num] = newInsert;
+            int next = std::upper_bound(nodNow.array, nodNow.array + nodNow.num, newInsert) - nodNow.array;
+            for (int i = nodNow.num; i >= next + 1; --i) {
+                nodNow.array[i] = nodNow.array[i - 1];
+            }
+            nodNow.array[next] = newInsert;
+            nodNow.num++;
+            if (nodNow.num != MAXSIZE) {
+                dataFile.seekp(nodLoc * sizeNod + sizeof(int));
+                dataFile.write(reinterpret_cast<char *>(&nodNow), sizeNod);
+                return;
+            }
+            //分块
+            splitBlock(nodLoc,nodNow);
+            return;
+        }
+    }
+
+    void splitBlock(int nodLoc,Node &nodNow){
+        Node nodNew;
+        nodNew.num = nodNow.num = MAXSIZE / 2;
+        nodNew.next = nodNow.next;
+        for (int i = MAXSIZE / 2; i < MAXSIZE; ++i) {
+            nodNew.array[i - MAXSIZE / 2] = nodNow.array[i];
+        }
+        dataFile.seekp(0,std::ios::end);
+        long long _newLoc = dataFile.tellp();
+        int newLoc = (_newLoc - sizeof(int)) / sizeNod;
+        dataFile.write(reinterpret_cast<char*>(&nodNew),sizeNod);
+        nodNow.next = newLoc;
+        dataFile.seekp(nodLoc * sizeNod + sizeof(int));
+        dataFile.write(reinterpret_cast<char*>(&nodNow),sizeNod);
+    }
+
+    void deleteInfo(std::string index,std::string value) {
+        if (head == -1) throw BasicException();
+        Information deleteInf;
+        deleteInf.Initialize(index, value);
+        int nodLoc;
+        Node nodNow;
+        nodNow.next = head;
+        while (nodNow.next != -1) {
+            nodLoc = nodNow.next;
+            dataFile.seekg(nodNow.next * sizeNod + sizeof(int));
+            dataFile.read(reinterpret_cast<char *>(&nodNow), sizeNod);
+            if (nodNow.num == 0) continue;
+            if (deleteInf < nodNow.array[0]) throw BasicException();
+            if (deleteInf > nodNow.array[nodNow.num - 1]) continue;
+            //可能在该节点内
+            if (nodNow.num == 1) {
+                //删节点;采用置空策略
+                if (nodLoc == head && nodNow.next == -1) {
+                    head = -1;
+                    return;
+                }
+                if (nodLoc == head) {
+                    head = nodNow.next;
+                    return;
+                }
+                nodNow.num--;
+                dataFile.seekp(nodLoc * sizeNod + sizeof(int));
+                dataFile.write(reinterpret_cast<char *>(&nodNow), sizeNod);
+                return;
+            }
+            int n = std::lower_bound(nodNow.array,nodNow.array + nodNow.num,deleteInf) - nodNow.array;
+            if (nodNow.array[n] == deleteInf) {
+                for (int j = n; j < nodNow.num - 1; ++j) {
+                    nodNow.array[j] = nodNow.array[j + 1];
+                }
+                nodNow.num--;
+                dataFile.seekp(nodLoc * sizeNod + sizeof(int));
+                dataFile.write(reinterpret_cast<char *>(&nodNow), sizeNod);
+                return;
+            } else {
+                throw BasicException();
+            }
+        }
+    }
+
+    //元素的index被修改
+    void modifyIndex(std::string oldIndex, std::string newIndex, std::string oldValue,std::string newValue){
+        deleteInfo(oldIndex, oldValue);
+        addInfo(newIndex,newValue);
+    }
+
+    //打印某索引
+    void printIndex(FileData<T> &system, std::string &index){
+        if (head == -1) throw BasicException();
+        std::vector<std::string> allFind;
+        bool haveFind = false;
+        Node nodNow;
+        nodNow.next = head;
+        while (nodNow.next != -1) {
+            dataFile.seekg(nodNow.next * sizeNod + sizeof(int));
+            dataFile.read(reinterpret_cast<char *>(&nodNow), sizeNod);
+            if (nodNow.num == 0) continue;
+            if (strcmp(nodNow.array[0].index,index.c_str()) > 0) break;
+            if (strcmp(nodNow.array[nodNow.num - 1].index,index.c_str()) < 0) continue;
+            //可能在本节点内
+            bool findEnd = false;
+            for (int i = 0; i < nodNow.num; ++i) {
+                if (strcmp(nodNow.array[i].index,index.c_str()) > 0) {
+                    findEnd = true;
+                    break;
+                }
+                if (strcmp(nodNow.array[i].index,index.c_str()) < 0) continue;
+                haveFind = true;
+                allFind.emplace_back(nodNow.array[i].value);
+            }
+            if (findEnd) break;
+        }
+        if (!haveFind) throw BasicException();
+        auto it = allFind.begin();
+        while (it != allFind.end()) {
+            system.printIndex(*it);
+            it++;
+        }
+    }
+
+};
+
+
 
 
 //用文件实现一个登录栈

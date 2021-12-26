@@ -5,6 +5,8 @@
 
 Books::Books(){
     BookDataStore.initialize("fileAllBooksData","fileAllBooks");
+    BookNameStore.initialize("fileBooksNameData");
+    BookAuthorStore.initialize("fileBooksAuthorData");
 }
 
 void Books::show(std::string cmd) {
@@ -35,9 +37,8 @@ void Books::show(std::string cmd) {
             //以上处理指令，word表示要求的信息类型，demand表示具体信息
             std::string _word = std::string(word);
             std::string _demand = std::string(demand);
-            defineShowDemand(demandInfo, _word, _demand);//以下将要求的信息放入demandInfo
-            //现在得到了demandInfo，遍历文件输出所有符合的内容
-            BookDataStore.printDemand(demandInfo);
+            //todo
+            defineShowDemand(demandInfo, _word, _demand);
         } else {
             throw BasicException();
         }
@@ -73,6 +74,12 @@ void Books::select(const std::string isbn){
         strcpy(newCreate.ISBN,isbn.c_str());
         BookDataStore.addInfo(isbn,newCreate);
         strcpy(bookSelect.ISBN,isbn.c_str());
+        strcpy(bookSelect.bookName, "\0");
+        strcpy(bookSelect.author,"\0");
+        strcpy(bookSelect.keyword, "\0");
+        strcpy(bookSelect.totalCost,"\0");
+        strcpy(bookSelect.price,"0.00");
+        bookSelect.quantity = 0;
     } catch (BasicException &ex) {
         throw BasicException();
     }
@@ -84,25 +91,23 @@ void Books::modify(std::string cmd) {
         if (cmd[0] == '\0') throw BasicException();
         int index = 0;
         std::string OldIndex = std::string(bookSelect.ISBN);
+        std::string OldBookName = std::string(bookSelect.bookName);
+        std::string OldAuthor = std::string(bookSelect.author);
         while (cmd[index] != '\0') {
             while (cmd[index] == ' ') { index++; }
             if (cmd[index] != '-') throw BasicException();
             int tmp = index;
-            while (cmd[index] != '=' && cmd[index] != '\0') {index++;}
+            while (cmd[index] != '=' && cmd[index] != '\0') { index++; }
             if (cmd[index] == '\0') throw BasicException();
             char word[index - tmp + 1];
-            for (int i = 0; i < index - tmp; ++i) {
-                word[i] = cmd[tmp + i];//word:-ISBN等
-            }
+            for (int i = 0; i < index - tmp; ++i) { word[i] = cmd[tmp + i]; }
             word[index - tmp] = '\0';
             index++;
             if (cmd[index] == '\0') throw BasicException();
             tmp = index;
-            while (cmd[index] != '\0' && cmd[index] != ' ') {index++;}
+            while (cmd[index] != '\0' && cmd[index] != ' ') { index++; }
             char demand[index - tmp + 1];
-            for (int i = 0; i < index - tmp; ++i) {
-                demand[i] = cmd[tmp + i];
-            }
+            for (int i = 0; i < index - tmp; ++i) { demand[i] = cmd[tmp + i]; }
             demand[index - tmp] = '\0';
             std::string _word = std::string(word);
             std::string _demand = std::string(demand);
@@ -111,13 +116,30 @@ void Books::modify(std::string cmd) {
             if (cmd[index] == '\0') break;
         }
         //现在得到了demandInfo，进行修改
-        if (OldIndex.empty()) {
-            BookDataStore.addInfo(bookSelect.ISBN,bookSelect);
+        //todo
+        if (strcmp(bookSelect.ISBN, OldIndex.c_str()) != 0) {//isbn被改
+            BookDataStore.modifyIndex(OldIndex, bookSelect.ISBN, bookSelect);
+        } else {//isbn未被改
+            BookDataStore.modifyInfo(OldIndex, bookSelect);
+        }
+        if (OldBookName[0] == '\0') {
+            if (bookSelect.bookName[0] != '\0') {
+                BookNameStore.addInfo(bookSelect.bookName, bookSelect.ISBN);
+            }
         } else {
-            if (strcmp(bookSelect.ISBN, OldIndex.c_str()) != 0) {
-                BookDataStore.modifyIndex(OldIndex, bookSelect.ISBN, bookSelect);
-            } else {
-                BookDataStore.modifyInfo(OldIndex, bookSelect);
+            if (strcmp(bookSelect.bookName, OldBookName.c_str()) != 0 ||
+                strcmp(bookSelect.ISBN, OldIndex.c_str()) != 0) {
+                BookNameStore.modifyIndex(OldBookName, bookSelect.bookName, OldIndex, bookSelect.ISBN);
+            }
+        }
+        if (OldAuthor[0] == '\0') {
+            if ( bookSelect.author[0] != '\0') {
+                BookAuthorStore.addInfo(bookSelect.author, bookSelect.ISBN);
+            }
+        } else {
+            if (strcmp(bookSelect.author, OldAuthor.c_str()) != 0 ||
+                strcmp(bookSelect.ISBN, OldIndex.c_str()) != 0) {
+                BookAuthorStore.modifyIndex(OldAuthor, bookSelect.author, OldIndex, bookSelect.ISBN);
             }
         }
     } catch (BasicException &ex) {
@@ -145,36 +167,37 @@ void Books::import(int _quantity, const std::string _total_cost, Diary &diarySys
 
 //以下为补充函数
 //只针对show
-void Books::defineShowDemand(BooksInf &demandInfo, std::string word, std::string demand){
-    if (word == "-ISBN") {
-        strcpy(demandInfo.ISBN,demand.c_str());
-    } else if (word == "-name") {
-        if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw BasicException();
-        for (int i = 0; i < demand.length() - 2; ++i) {
-            demand[i] = demand[i + 1];
+void Books::defineShowDemand(BooksInf &demandInfo, std::string word, std::string demand) {
+    try {
+        if (word == "-ISBN") {
+            BookDataStore.printIndex(demand);
+        } else if (word == "-name") {
+            if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw DealException();
+            for (int i = 0; i < demand.length() - 2; ++i) { demand[i] = demand[i + 1]; }
+            demand[demand.length() - 2] = '\0';
+            BookNameStore.printIndex(BookDataStore,demand);
+        } else if (word == "-author") {
+            if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw DealException();
+            for (int i = 0; i < demand.length() - 2; ++i) { demand[i] = demand[i + 1]; }
+            demand[demand.length() - 2] = '\0';
+            BookAuthorStore.printIndex(BookDataStore,demand);
+        } else if (word == "-keyword") {
+            if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw DealException();
+            for (int i = 0; i < demand.length() - 2; ++i) {demand[i] = demand[i + 1];}
+            demand[demand.length() - 2] = '\0';
+            int i = 0;
+            while (demand[i] != '\0') {
+                i++;
+                if (demand[i] == '|') throw DealException();
+            }
+            strcpy(demandInfo.keyword, demand.c_str());
+            BookDataStore.printDemand(demandInfo);
+        } else {
+            throw DealException();
         }
-        demand[demand.length() - 2] = '\0';
-        strcpy(demandInfo.bookName,demand.c_str());
-    } else if (word == "-author") {
-        if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw BasicException();
-        for (int i = 0; i < demand.length() - 2; ++i) {
-            demand[i] = demand[i + 1];
-        }
-        demand[demand.length() - 2] = '\0';
-        strcpy(demandInfo.author,demand.c_str());
-    } else if (word == "-keyword") {
-        if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw BasicException();
-        for (int i = 0; i < demand.length() - 2; ++i) {
-            demand[i] = demand[i + 1];
-        }
-        demand[demand.length() - 2] = '\0';
-        int i = 0;
-        while (demand[i] != '\0') {
-            i++;
-            if (demand[i] == '|') throw BasicException();
-        }
-        strcpy(demandInfo.keyword,demand.c_str());
-    } else {
+    } catch (BasicException &ex) {
+        std::cout << '\n';
+    } catch (DealException &ex) {
         throw BasicException();
     }
 }
