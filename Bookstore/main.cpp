@@ -9,7 +9,7 @@ Stack Account::accountInStack;
 
 using namespace std;
 int main(){
-    //freopen("testcase5.in","r",stdin);
+    //freopen("2.in","r",stdin);
     //freopen("gyj.out","w",stdout);
     Statement stmt;
     string cmd;

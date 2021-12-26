@@ -108,7 +108,7 @@ void DiaryRecord::returnIndex(std::string index) {
             staffRecord << _content << '\n';
         }
     }
-    std::cout << '\n';
+    staffRecord << '\n';
 }
 
 void DiaryRecord::clear(){

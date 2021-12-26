@@ -23,8 +23,8 @@ static std::string takeFirstWord(std::string &cmd){
         std::string result = std::string(word);
         while (cmd[index] == ' ') {++index;}
         int l = cmd.length();
-        if (l == index) {
-            cmd[0] = '\0';
+        if (cmd[index] == '\0') {
+            cmd = "\0";
             return result;
         }
         for (int i = index; i < l; ++i) cmd[i - index] = cmd[i];
@@ -49,8 +49,10 @@ static bool checkShowFinance(const std::string &cmd){
 //生成所执行的语法类型
 void execute(Statement &stmt, std::string &cmd) {
     try {
+        if (cmd.length() > 1024) throw BasicException();
         std::string line = cmd;
         std::string order = takeFirstWord(cmd);
+        if (cmd[cmd.length() - 1] == ' ') throw BasicException();
         if (order == "quit") {
             stmt.Quit();
         } else if (order == "exit") {

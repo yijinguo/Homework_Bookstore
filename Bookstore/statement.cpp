@@ -245,7 +245,7 @@ void Statement::Import () {
 void Statement::ReportMyself () {
     try {
         separateCmd(cmdLine);
-        if (wordNum != 1) throw BasicException();
+        if (wordNum != 0) throw BasicException();
         if (Account::accountLog.priority != 3 && Account::accountLog.priority != 7) throw BasicException();
         std::string ID = std::string(Account::accountLog.userID);
         diarySystem.reportMyself(ID);
@@ -289,7 +289,7 @@ void Statement::ShowFinance () {
 void Statement::ReportFinance () {
     try {
         separateCmd(cmdLine);
-        if (wordNum != 1) throw BasicException();
+        if (wordNum != 0) throw BasicException();
         diarySystem.reportFinance();
         int priority = Account::accountLog.priority;
         std::string name = std::string(Account::accountLog.userID);
@@ -303,7 +303,7 @@ void Statement::ReportFinance () {
 void Statement::ReportEmployee () {
     try {
         separateCmd(cmdLine);
-        if (wordNum != 1) throw BasicException();
+        if (wordNum != 0) throw BasicException();
         diarySystem.reportEmployee();
         int priority = Account::accountLog.priority;
         std::string name = std::string(Account::accountLog.userID);
