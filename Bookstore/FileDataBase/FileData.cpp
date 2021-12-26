@@ -59,6 +59,19 @@ void Stack::modifyBook(const std::string &ISBN){
     vecStack.push_back(a);
 }
 
+void Stack::modifyIndex(std::string &oldIndex, std::string newIndex){
+    int i = 0;
+    auto it = vecStack.begin();
+    while (it != vecStack.end()) {
+        if (it->bookISBN == oldIndex) {
+            it->bookISBN = newIndex;
+            vecStack[i] = *it;
+        }
+        it++;
+        i++;
+    }
+}
+
 
 DiaryRecord::DiaryRecord(){
     diaryRecord.open("fileDiaryRecord",std::fstream::in);

@@ -382,7 +382,7 @@ template<class T>
 class DoubleIndex{
 private:
     struct Information {
-        char index[31];
+        char index[61];
         char value[31];
 
         void Initialize(std::string &_index, std::string &_value) {
@@ -652,6 +652,9 @@ public:
 
     //修改选中图书
     void modifyBook(const std::string &ISBN);
+
+    //当有图书ISBN被改变
+    void modifyIndex(std::string &oldIndex, std::string newIndex);
 
 };
 

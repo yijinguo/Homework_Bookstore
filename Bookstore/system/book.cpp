@@ -94,6 +94,12 @@ void Books::modify(std::string cmd) {
         std::string OldIndex = std::string(bookSelect.ISBN);
         std::string OldBookName = std::string(bookSelect.bookName);
         std::string OldAuthor = std::string(bookSelect.author);
+        bool MIndex = false;
+        bool MBookName = false;
+        bool MAuthor = false;
+        bool MKeyword = false;
+        bool MPrice = false;
+        BooksInf modify;
         while (cmd[index] != '\0') {
             while (cmd[index] == ' ') { index++; }
             if (cmd[index] != '-') throw BasicException();
@@ -113,13 +119,20 @@ void Books::modify(std::string cmd) {
             std::string _word = std::string(word);
             std::string _demand = std::string(demand);
             //以上处理指令，word表示要求的信息类型，demand表示具体信息
-            defineDemand(bookSelect, _word, _demand);//以下将要求的信息放入demandInfo
+            defineDemand(modify, _word, _demand,MIndex,MBookName,MAuthor,MKeyword, MPrice);//以下将要求的信息放入demandInfo
             if (cmd[index] == '\0') break;
         }
+        if (MIndex) strcpy(bookSelect.ISBN,modify.ISBN);
+        if (MBookName) strcpy(bookSelect.bookName,modify.bookName);
+        if (MAuthor) strcpy(bookSelect.author,modify.author);
+        if (MKeyword) strcpy(bookSelect.keyword,modify.keyword);
+        if (MPrice) bookSelect.price = modify.price;
         //现在得到了demandInfo，进行修改
         if (strcmp(bookSelect.ISBN, OldIndex.c_str()) != 0) {//isbn被改
+            std::string s = std::string(bookSelect.ISBN);
+            Account::accountInStack.modifyIndex(OldIndex,s);
             BookDataStore.modifyIndex(OldIndex, bookSelect.ISBN, bookSelect);
-        } else {//isbn未被改
+        } else {//isbn不变
             BookDataStore.modifyInfo(OldIndex, bookSelect);
         }
         if (OldBookName[0] == '\0') {
@@ -200,34 +213,43 @@ void Books::defineShowDemand(BooksInf &demandInfo, std::string word, std::string
 }
 
 //只针对modify
-void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string demand) {
+void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string demand,bool &MIndex, bool &MBookName,bool &MAuthor,bool &MKeyword, bool &MPrice) {
     try {
         if (word == "-ISBN") {
+            if (MIndex) throw BasicException();
+            if (strcmp(bookSelect.ISBN,demand.c_str()) == 0) throw BasicException();
             strcpy(demandInfo.ISBN, demand.c_str());
+            MIndex = true;
         } else if (word == "-name") {
+            if (MBookName) {throw BasicException();}
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw BasicException();
             for (int i = 0; i < demand.length() - 2; ++i) {
                 demand[i] = demand[i + 1];
             }
             demand[demand.length() - 2] = '\0';
             strcpy(demandInfo.bookName, demand.c_str());
+            MBookName = true;
         } else if (word == "-author") {
+            if (MAuthor) {throw BasicException();}
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw BasicException();
             for (int i = 0; i < demand.length() - 2; ++i) {
                 demand[i] = demand[i + 1];
             }
             demand[demand.length() - 2] = '\0';
             strcpy(demandInfo.author, demand.c_str());
+            MAuthor = true;
         } else if (word == "-keyword") {
+            if (MKeyword) {throw BasicException();}
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw BasicException();
-            for (int i = 0; i < demand.length() - 2; ++i) {
-                demand[i] = demand[i + 1];
-            }
+            for (int i = 0; i < demand.length() - 2; ++i) {demand[i] = demand[i + 1];}
             demand[demand.length() - 2] = '\0';
-            checkKeyword(demand);
+            if (!checkKeyword(demand)) throw BasicException();
             strcpy(demandInfo.keyword, demand.c_str());
+            MKeyword = true;
         } else if (word == "-price") {
+            if (MPrice) {throw BasicException();}
             demandInfo.price = checkDouble(demand);
+            MPrice = true;
         } else {
             throw BasicException();
         }
@@ -258,16 +280,19 @@ bool Books::checkKeyword(std::string keyword) {
     while (keyword[index] != '\0') {
         int tmp = index;
         while (keyword[index] != '|') {
+            if (keyword[index] == '\0') break;
             if (keyword[index] == '"' || keyword[index] == ' ') return false;
             index++;
         }
-        char word[index - tmp];
+        char word[index - tmp + 1];
         for (int i = 0; i < index - tmp; ++i) {
             word[i] = keyword[tmp + i];
         }
+        word[index - tmp] = '\0';
         std::string s = std::string(word);
         if (words.count(s) != 0) return false;
         words.insert(s);
+        if (keyword[index] == '\0') break;
         index++;
     }
     return true;

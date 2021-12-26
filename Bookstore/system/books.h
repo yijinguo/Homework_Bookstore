@@ -78,7 +78,7 @@ public:
     //以下为自补函数
     //用于处理show和modify的多条信息
     void defineShowDemand(BooksInf &demandInfo, std::string word, std::string demand);
-    void defineDemand(BooksInf &demandInfo,std::string word, std::string demand);
+    void defineDemand(BooksInf &demandInfo,std::string word, std::string demand, bool &MIndex, bool &MBookName,bool &MAuthor,bool &MKeyword,bool &MPrice);
     bool checkKeyword(std::string cmd);
     double checkDouble(std::string money);
     //string-to-double
