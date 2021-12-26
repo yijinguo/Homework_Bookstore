@@ -28,6 +28,8 @@ void Diary::showFinance(int time) {
     try {
         if (time == -1) {
             deal.printAll();
+        } else if (time == 0) {
+            std::cout << '\n';
         } else {
             deal.printTime(time);
         }

@@ -8,7 +8,7 @@ std::vector<std::string> Account::staffAll;
 
 using namespace std;
 int main(){
-    //freopen("10.in","r",stdin);
+    //freopen("testcase5.txt","r",stdin);
     //freopen("gyj.out","w",stdout);
     Statement stmt;
     string cmd;

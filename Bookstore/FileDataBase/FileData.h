@@ -16,7 +16,7 @@ class FileData {
 private:
 
     struct Information {
-        char index[30];
+        char index[31];
         int Loc;
 
         void Initialize(std::string &_index, int _Loc) {
@@ -425,7 +425,7 @@ private:
 
         bool operator!=(const Information &b) {
             if (strcmp(index, b.index) != 0) return true;
-            if (strcpy(value,b.value) != 0) return true;
+            if (strcmp(value,b.value) != 0) return true;
             return false;
         }
     };
@@ -665,8 +665,8 @@ class FinanceRecord{
 private:
     struct Information{
         int time;
-        char income[13];
-        char expense[13];
+        char income[14];
+        char expense[14];
     };
 
     int sizeInf = sizeof(Information);
@@ -675,8 +675,9 @@ private:
 public:
 
     int Time;//目前交易总笔数
-    char inAll[13];//目前总收入
-    char outAll[13];//目前总支出
+    char inAll[14];
+    char outAll[14];
+
 
     FinanceRecord();
 

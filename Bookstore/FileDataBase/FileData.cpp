@@ -85,41 +85,65 @@ void DiaryRecord::clear(){
 
 
 FinanceRecord::FinanceRecord(){
+    Information initial;
+    initial.time = 0;
+    strcpy(initial.income, "0.00");
+    strcpy(initial.expense,"0.00");
     file.open("fileFinanceRecord",std::fstream::in);
     if (!file) {
+        Time = 0;
+        strcpy(inAll, "0.00");
+        strcpy(outAll,"0.00");
         file.open("fileFinanceRecord",std::fstream::out);
+        file.write(reinterpret_cast<char*>(&initial),sizeInf);
+        file.close();
+    } else {
+        file.read(reinterpret_cast<char*>(&initial), sizeInf);
+        file.close();
+        Time = initial.time;
+        strcpy(inAll,initial.income);
+        strcpy(outAll, initial.expense);
     }
-    file.close();
     file.open("fileFinanceRecord");
-    Time = 0;
-    strcpy(inAll, "0");
-    strcpy(outAll,"0");
 }
 
 FinanceRecord::~FinanceRecord(){
+    Information last;
+    last.time = Time;
+    strcpy(last.income,inAll);
+    strcpy(last.expense,outAll);
+    file.seekp(0);
+    file.write(reinterpret_cast<char*>(&last),sizeInf);
     file.close();
 }
 
 void FinanceRecord::addRecord(std::string income, std::string expense){
     Information add;
     Time++;
-    double in = stringToDouble(income) + stringToDouble(std::string(inAll));
-    strcpy(inAll, doubleToString(in).c_str());
-    double out = stringToDouble(expense) + stringToDouble(std::string(outAll));
-    strcpy(outAll, doubleToString(out).c_str());
     add.time = Time;
-    strcpy(add.income, inAll);
-    strcpy(add.expense, outAll);
+    strcpy(add.income, income.c_str());
+    strcpy(add.expense, expense.c_str());
+    double in_all = stringToDouble(inAll) + stringToDouble(income);
+    double out_all = stringToDouble(outAll) + stringToDouble(expense);
+    strcpy(inAll, doubleToString(in_all).c_str());
+    strcpy(outAll, doubleToString(out_all).c_str());
     file.seekp(0, std::ios::end);
     file.write(reinterpret_cast<char*>(&add),sizeInf);
 }
 
 void FinanceRecord::printTime(int time){
     if (time > Time) throw BasicException();
-    Information print;
-    file.seekg((time - 1) * sizeInf);
-    file.read(reinterpret_cast<char*>(&print),sizeInf);
-    std::cout << "+ " << print.income << " - " << print.expense << '\n';
+    double incomeAll = 0, expenseAll = 0;
+    for (int i = 1; i <= time; ++i) {
+        Information tmp;
+        file.seekg((Time - i + 1) * sizeInf);
+        file.read(reinterpret_cast<char*>(&tmp),sizeInf);
+        incomeAll += stringToDouble(tmp.income);
+        expenseAll += stringToDouble(tmp.expense);
+    }
+    std::string in = doubleToString(incomeAll);
+    std::string out = doubleToString(expenseAll);
+    std::cout << "+ " << in << " - " << out << '\n';
 }
 
 void FinanceRecord::printAll(){
@@ -149,6 +173,7 @@ void TradeRecord::importBook(std::string _user_id,std::string isbn,std::string _
 }
 
 void TradeRecord::writeTotal(FinanceRecord &a){
+
     tradeRecord << a.Time << "  + " << a.inAll << " - " << a.outAll << '\n';
 }
 
