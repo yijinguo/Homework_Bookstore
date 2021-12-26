@@ -9,8 +9,8 @@ Stack Account::accountInStack;
 
 using namespace std;
 int main(){
-    freopen("3.in","r",stdin);
-    freopen("gyj.out","w",stdout);
+    //freopen("6.in","r",stdin);
+    //freopen("gyj.out","w",stdout);
     Statement stmt;
     string cmd;
     while (getline(cin, cmd)) {
