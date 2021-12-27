@@ -273,9 +273,10 @@ void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string dema
 double Books::checkDouble(std::string money){
     bool haveDot = false;
     int i = 0;
+    if (money[0] == '.') throw BasicException();
     for (; i < money.length(); ++i) {
         if (!haveDot && i >= 10) throw BasicException();
-        if (i == 16) break;
+        if (haveDot && i >= 13) throw BasicException();
         if (money[i] == '.') {
             if (haveDot) throw BasicException();
             haveDot = true;
