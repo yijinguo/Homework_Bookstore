@@ -200,8 +200,8 @@ void Books::defineShowDemand(BooksInf &demandInfo, std::string word, std::string
             demand[demand.length() - 2] = '\0';
             int i = 0;
             while (demand[i] != '\0') {
-                i++;
                 if (demand[i] == '|') throw DealException();
+                i++;
             }
             strcpy(demandInfo.keyword, demand.c_str());
             BookDataStore.printDemand(demandInfo);
@@ -272,7 +272,10 @@ void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string dema
 //检查一个字符串是否是浮点数，如果是就修改为double
 double Books::checkDouble(std::string money){
     bool haveDot = false;
-    for (int i = 0; i < money.length(); ++i) {
+    int i = 0;
+    for (; i < money.length(); ++i) {
+        if (!haveDot && i >= 10) throw BasicException();
+        if (i == 16) break;
         if (money[i] == '.') {
             if (haveDot) throw BasicException();
             haveDot = true;
@@ -280,7 +283,15 @@ double Books::checkDouble(std::string money){
             if (!(money[i] >= '0' && money[i] <= '9')) throw BasicException();
         }
     }
-    return stringToDouble(money);
+    if (i == 16) {
+        char tmp[18];
+        for (int j = 0; j <= 16; ++j) { tmp[j] = money[j]; }
+        tmp[17] = '\0';
+        std::string s = std::string(tmp);
+        return stringToDouble(s);
+    } else {
+        return stringToDouble(money);
+    }
 }
 
 bool Books::checkKeyword(std::string keyword) {
