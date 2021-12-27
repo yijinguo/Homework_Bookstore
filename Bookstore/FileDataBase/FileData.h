@@ -1,6 +1,6 @@
 #ifndef UNTITLED3_FILEDATA_H
 #define UNTITLED3_FILEDATA_H
-#define MAXSIZE 400
+#define MAXSIZE 100
 
 
 #include <fstream>
