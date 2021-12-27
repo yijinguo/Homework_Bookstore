@@ -49,6 +49,13 @@ bool wordExam(std::string word) {
     return true;
 }
 
+/*检测仅含可见字符*/
+bool wordVisual(std::string word){
+    for (int i = 0; i < word.length(); ++i) {
+        if (!(word[i] > 32 && word[i] < 127)) return false;
+    }
+    return true;
+}
 
 void Statement::Su () {
     try {
@@ -95,7 +102,7 @@ void Statement::Register () {
         if (wordNum != 3) throw BasicException();
         if (!wordExam(words[0])) throw BasicException();
         if (!wordExam(words[1])) throw BasicException();
-        if (words[2].length() > 30) throw BasicException();
+        if (words[2].length() > 30 || !wordVisual(words[2])) throw BasicException();
         accountSystem.Register(words[0],words[1],words[2]);
         int priority = Account::accountLog.priority;
         std::string name = std::string(Account::accountLog.userID);
@@ -134,7 +141,7 @@ void Statement::Useradd () {
         if (!wordExam(words[0])) throw BasicException();
         if (!wordExam(words[1])) throw BasicException();
         if (words[2] != "0" && words[2] != "1" && words[2] != "3") throw BasicException();
-        if (words[3].length() > 30) throw BasicException();
+        if (words[3].length() > 30 || !wordVisual(words[3])) throw BasicException();
         int _priority = words[2][0] - '0';
         accountSystem.Useradd(words[0],words[1],_priority,words[3]);
         int priority = Account::accountLog.priority;
@@ -199,7 +206,7 @@ void Statement::Select () {
     try {
         separateCmd(cmdLine);
         if (wordNum != 1) throw BasicException();
-        if (words[0].length() > 20) throw BasicException();
+        if (words[0].length() > 20 || !wordVisual(words[0])) throw BasicException();
         bookSystem.select(words[0]);
         int priority = Account::accountLog.priority;
         std::string name = std::string(Account::accountLog.userID);
