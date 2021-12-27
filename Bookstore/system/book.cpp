@@ -181,9 +181,10 @@ void Books::import(int _quantity, const std::string _total_cost, Diary &diarySys
 void Books::defineShowDemand(BooksInf &demandInfo, std::string word, std::string demand) {
     try {
         if (word == "-ISBN") {
+            if (demand.length() > 20) throw DealException();
             BookDataStore.printIndex(demand);
         } else if (word == "-name") {
-            if (demand.length() <= 2) throw DealException();
+            if (demand.length() <= 2 || demand.length() > 62) throw DealException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw DealException();
             for (int i = 0; i < demand.length() - 2; ++i) {
                 if (demand[i + 1] == '"') throw DealException();
@@ -192,7 +193,7 @@ void Books::defineShowDemand(BooksInf &demandInfo, std::string word, std::string
             demand[demand.length() - 2] = '\0';
             BookNameStore.printIndex(BookDataStore,demand);
         } else if (word == "-author") {
-            if (demand.length() <= 2) throw DealException();
+            if (demand.length() <= 2 || demand.length() > 62) throw DealException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw DealException();
             for (int i = 0; i < demand.length() - 2; ++i) {
                 if (demand[i + 1] == '"') throw DealException();
@@ -201,7 +202,7 @@ void Books::defineShowDemand(BooksInf &demandInfo, std::string word, std::string
             demand[demand.length() - 2] = '\0';
             BookAuthorStore.printIndex(BookDataStore,demand);
         } else if (word == "-keyword") {
-            if (demand.length() <= 2) throw DealException();
+            if (demand.length() <= 2 || demand.length() > 62) throw DealException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw DealException();
             for (int i = 0; i < demand.length() - 2; ++i) {demand[i] = demand[i + 1];}
             demand[demand.length() - 2] = '\0';
@@ -227,12 +228,13 @@ void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string dema
     try {
         if (word == "-ISBN") {
             if (MIndex) throw BasicException();
+            if (demand.length() > 20) throw BasicException();
             if (strcmp(bookSelect.ISBN,demand.c_str()) == 0) throw BasicException();
             strcpy(demandInfo.ISBN, demand.c_str());
             MIndex = true;
         } else if (word == "-name") {
             if (MBookName) throw BasicException();
-            if (demand.length() <= 2) throw BasicException();
+            if (demand.length() <= 2 || demand.length() > 62) throw BasicException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw BasicException();
             for (int i = 0; i < demand.length() - 2; ++i) {
                 if (demand[i + 1] == '"') throw BasicException();
@@ -243,7 +245,7 @@ void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string dema
             MBookName = true;
         } else if (word == "-author") {
             if (MAuthor) {throw BasicException();}
-            if (demand.length() <= 2) throw BasicException();
+            if (demand.length() <= 2 || demand.length() > 62) throw BasicException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw BasicException();
             for (int i = 0; i < demand.length() - 2; ++i) {
                 if (demand[i + 1] == '"') throw BasicException();
@@ -254,7 +256,7 @@ void Books::defineDemand(BooksInf &demandInfo,std::string word, std::string dema
             MAuthor = true;
         } else if (word == "-keyword") {
             if (MKeyword) throw BasicException();
-            if (demand.length() <= 2) throw BasicException();
+            if (demand.length() <= 2 || demand.length() > 62) throw BasicException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw BasicException();
             for (int i = 0; i < demand.length() - 2; ++i) {
                 if (demand[i + 1] == '"') throw BasicException();

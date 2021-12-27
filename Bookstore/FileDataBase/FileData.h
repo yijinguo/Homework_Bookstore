@@ -383,7 +383,7 @@ class DoubleIndex{
 private:
     struct Information {
         char index[61];
-        char value[31];
+        char value[21];
 
         void Initialize(std::string &_index, std::string &_value) {
             strcpy(index, _index.c_str());
