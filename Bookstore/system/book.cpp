@@ -30,7 +30,10 @@ void Books::show(std::string cmd) {
             if (cmd[index] == '\0' || cmd[index] == ' ') throw BasicException();
             while (cmd[index] != ' ' && cmd[index] != '\0') { index++; }
             char demand[index - tmp + 1];
-            for (int i = 0; i < index - tmp; ++i) {demand[i] = cmd[tmp + i];}
+            for (int i = 0; i < index - tmp; ++i) {
+                if (!(cmd[tmp + i] > 32 && cmd[tmp] < 127)) throw BasicException();
+                demand[i] = cmd[tmp + i];
+            }
             demand[index - tmp] = '\0';
             while (cmd[index] == ' ') { index++; }
             if (cmd[index] != '\0') throw BasicException();
@@ -114,7 +117,10 @@ void Books::modify(std::string cmd) {
             tmp = index;
             while (cmd[index] != '\0' && cmd[index] != ' ') { index++; }
             char demand[index - tmp + 1];
-            for (int i = 0; i < index - tmp; ++i) { demand[i] = cmd[tmp + i]; }
+            for (int i = 0; i < index - tmp; ++i) {
+                if (!(cmd[tmp + i] > 32 && cmd[tmp] < 127)) throw BasicException();
+                demand[i] = cmd[tmp + i];
+            }
             demand[index - tmp] = '\0';
             std::string _word = std::string(word);
             std::string _demand = std::string(demand);
