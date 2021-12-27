@@ -184,7 +184,7 @@ void Books::defineShowDemand(BooksInf &demandInfo, std::string word, std::string
             if (demand.length() > 20) throw DealException();
             BookDataStore.printIndex(demand);
         } else if (word == "-name") {
-            if (demand.length() <= 2 || demand.length() > 62) throw DealException();
+            if (demand.length() > 62) throw DealException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw DealException();
             for (int i = 0; i < demand.length() - 2; ++i) {
                 if (demand[i + 1] == '"') throw DealException();
@@ -194,7 +194,7 @@ void Books::defineShowDemand(BooksInf &demandInfo, std::string word, std::string
             std::string _demand = std::string(demand);
             BookNameStore.printIndex(BookDataStore,_demand);
         } else if (word == "-author") {
-            if (demand.length() <= 2 || demand.length() > 62) throw DealException();
+            if (demand.length() > 62) throw DealException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw DealException();
             for (int i = 0; i < demand.length() - 2; ++i) {
                 if (demand[i + 1] == '"') throw DealException();
@@ -204,7 +204,7 @@ void Books::defineShowDemand(BooksInf &demandInfo, std::string word, std::string
             std::string _demand = std::string(demand);
             BookAuthorStore.printIndex(BookDataStore,_demand);
         } else if (word == "-keyword") {
-            if (demand.length() <= 2 || demand.length() > 62) throw DealException();
+            if (demand.length() > 62) throw DealException();
             if (demand[0] != '"' || demand[demand.length() - 1] != '"') throw DealException();
             for (int i = 0; i < demand.length() - 2; ++i) {
                 if (demand[i + 1] == '|' || demand[i + 1] == '"') throw DealException();
