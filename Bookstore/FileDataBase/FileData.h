@@ -342,6 +342,9 @@ public:
         int nodLoc;
         Node nodNow;
         nodNow.next = head;
+        if (head == -1) {
+            std::cout << '\n';
+        }
         while (nodNow.next != -1) {
             nodLoc = nodNow.next;
             dataFile.seekg(nodNow.next * sizeNod + sizeof(int));
