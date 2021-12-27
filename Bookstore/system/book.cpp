@@ -120,6 +120,7 @@ void Books::modify(std::string cmd) {
             std::string _demand = std::string(demand);
             //以上处理指令，word表示要求的信息类型，demand表示具体信息
             defineDemand(modify, _word, _demand,MIndex,MBookName,MAuthor,MKeyword, MPrice);//以下将要求的信息放入demandInfo
+            while (cmd[index] == ' ') { index++; }
             if (cmd[index] == '\0') break;
         }
         if (MIndex) strcpy(bookSelect.ISBN,modify.ISBN);

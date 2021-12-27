@@ -132,7 +132,7 @@ void Statement::Useradd () {
         separateCmd(cmdLine);
         if (wordNum != 4) throw BasicException();
         if (!wordExam(words[0])) throw BasicException();
-        if (words[1].length() > 30) throw BasicException();
+        if (!wordExam(words[1])) throw BasicException();
         if (words[2] != "0" && words[2] != "1" && words[2] != "3") throw BasicException();
         if (words[3].length() > 30) throw BasicException();
         int _priority = words[2][0] - '0';
