@@ -118,7 +118,7 @@ void Books::modify(std::string cmd) {
             while (cmd[index] != '\0' && cmd[index] != ' ') { index++; }
             char demand[index - tmp + 1];
             for (int i = 0; i < index - tmp; ++i) {
-                if (!(cmd[tmp + i] > 32 && cmd[tmp] < 127)) throw BasicException();
+                if (!(cmd[tmp + i] > 32 && cmd[tmp + i] < 127)) throw BasicException();
                 demand[i] = cmd[tmp + i];
             }
             demand[index - tmp] = '\0';
@@ -325,9 +325,7 @@ bool Books::checkKeyword(std::string keyword) {
         }
         if (keyword[index] != '\0' && keyword[index + 1] == '|') return false;
         char word[index - tmp + 1];
-        for (int i = 0; i < index - tmp; ++i) {
-            word[i] = keyword[tmp + i];
-        }
+        for (int i = 0; i < index - tmp; ++i) {word[i] = keyword[tmp + i];}
         word[index - tmp] = '\0';
         std::string s = std::string(word);
         if (words.count(s) != 0) return false;
