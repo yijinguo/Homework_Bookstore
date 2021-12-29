@@ -80,7 +80,6 @@ public:
     void defineShowDemand(BooksInf &demandInfo, std::string word, std::string demand);
     void defineDemand(BooksInf &demandInfo,std::string word, std::string demand, bool &MIndex, bool &MBookName,bool &MAuthor,bool &MKeyword,bool &MPrice);
     bool checkKeyword(std::string cmd);
-    bool checkISBN(std::string word);
     double checkDouble(std::string money);
     //string-to-double
     static double stringToDouble(std::string demand) {

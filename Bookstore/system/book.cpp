@@ -31,7 +31,7 @@ void Books::show(std::string cmd) {
             while (cmd[index] != ' ' && cmd[index] != '\0') { index++; }
             char demand[index - tmp + 1];
             for (int i = 0; i < index - tmp; ++i) {
-                if (!(cmd[tmp + i] > 32 && cmd[tmp] < 127)) throw BasicException();
+                if (!(cmd[tmp + i] > 32 && cmd[tmp + i] < 127)) throw BasicException();
                 demand[i] = cmd[tmp + i];
             }
             demand[index - tmp] = '\0';
@@ -51,7 +51,6 @@ void Books::show(std::string cmd) {
 
 void Books::buy(const std::string &isbn, const int _quantity, Diary &diarySystem) {
     try {
-        if (!checkISBN(isbn)) throw BasicException();
         if (Account::accountLog.priority < 1) throw BasicException();
         BooksInf modify = BookDataStore.readInfo(isbn);
         if (modify.quantity < _quantity) throw BasicException();
@@ -71,7 +70,6 @@ void Books::select(const std::string isbn){
     try {
         if (Account::accountLog.priority < 3) throw BasicException();
         if (!Account::haveSelect) Account::selectTrue();
-        if (!checkISBN(isbn)) throw BasicException();
         bookSelect = BookDataStore.findInfo(isbn);
         Account::accountInStack.modifyBook(isbn);
     } catch (CreateException &ex) {
@@ -339,11 +337,3 @@ bool Books::checkKeyword(std::string keyword) {
     return true;
 }
 
-
-bool Books::checkISBN(std::string word){
-    if (word.length() > 20) return false;
-    for (int i = 0; i < word.length(); ++i) {
-        if (!(word[i] > 32 && word[i] < 127)) return false;
-    }
-    return true;
-}
