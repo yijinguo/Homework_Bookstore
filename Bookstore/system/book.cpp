@@ -113,7 +113,7 @@ void Books::modify(std::string cmd) {
             for (int i = 0; i < index - tmp; ++i) { word[i] = cmd[tmp + i]; }
             word[index - tmp] = '\0';
             index++;
-            if (cmd[index] == '\0' || cmd[index] == ' ') throw BasicException();
+            if (cmd[index] == '\0') throw BasicException();
             tmp = index;
             while (cmd[index] != '\0' && cmd[index] != ' ') { index++; }
             char demand[index - tmp + 1];
