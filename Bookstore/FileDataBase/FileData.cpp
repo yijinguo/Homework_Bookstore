@@ -94,19 +94,50 @@ void DiaryRecord::write(int &priority,std::string &name, std::string &content){
     diaryRecord.seekp(0,std::ios::end);
     diaryRecord << priority << " " << name << " " << content << '\n';
 }
+
+std::string takeFirstWord(std::string &cmd){
+    int index = 0;
+    int firstWordIndex;
+    std::string firstWord;
+    while (cmd[index] == ' ') {++index;}
+    if (cmd[index] != '\0') {
+        firstWordIndex = index;
+        while (cmd[index] != ' ' && cmd[index] != '\0') {++index;}
+        char word[index - firstWordIndex + 1];
+        for (int i = 0; i < index - firstWordIndex; ++i) {word[i] = cmd[i + firstWordIndex];}
+        word[index - firstWordIndex] = '\0';
+        std::string result = std::string(word);
+        while (cmd[index] == ' ') {++index;}
+        int l = cmd.length();
+        if (cmd[index] == '\0') {
+            cmd = "\0";
+            return result;
+        }
+        for (int i = index; i < l; ++i) cmd[i - index] = cmd[i];
+        cmd[l - index] = '\0';
+        return result;
+    } else {
+        throw BlankLineException();
+    }
+}
 //生成员工操作,注意生成最后需要多输出一行'\n'作为划分
 void DiaryRecord::returnIndex(std::string index) {
-    int _priority;
-    std::string _name;
-    std::string _content;
-    diaryRecord.seekg(0);
+    int _priority = 0;
+    char nameAndContent[1050];
     staffRecord.seekp(0,std::ios::end);
     staffRecord << index << "'s record" <<'\n';
+    diaryRecord.seekg(0);
     while (diaryRecord.peek() != EOF) {
-        diaryRecord >> _priority >> _name >> _content;
-        if (_priority == 3 && _name == index) {
-            staffRecord << _content << '\n';
-        }
+        diaryRecord >> _priority;
+        diaryRecord.getline(nameAndContent, 1050, '\n');
+        if (_priority != 3) continue;
+        std::string content = std::string(nameAndContent);
+        std::string name = takeFirstWord(content);
+        if (name != index) continue;
+        char transfer[1024];
+        strcpy(transfer,content.c_str());
+        std::string _content = std::string(transfer);
+        staffRecord << _content << '\n';
     }
     staffRecord << '\n';
 }
