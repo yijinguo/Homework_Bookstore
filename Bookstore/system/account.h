@@ -36,6 +36,7 @@ class Account {
 private:
 
     FileData<AccountInf> accountDataStore;
+    std::fstream fileStaffStore;
 
 public:
 
@@ -48,7 +49,7 @@ public:
     static void initialize(){
         //accountLog = {0, "0", "0", "0"};
         accountLog.priority = 0;
-        strcpy(accountLog.userID,"0");
+        strcpy(accountLog.userID,"visitor");
         strcpy(accountLog.password,"0");
         strcpy(accountLog.userName,"0");
         staffNum = 0;
@@ -84,6 +85,7 @@ public:
 
 
     Account();
+    ~Account();
     //登录{0}
     void su(const std::string &_user_id, const std::string &_password);
     //登出{1}

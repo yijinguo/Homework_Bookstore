@@ -3,6 +3,20 @@
 Account::Account() {
     try {
         initialize();
+        fileStaffStore.open("fileStaffStore",std::fstream::in);
+        if (!fileStaffStore) {
+            fileStaffStore.open("fileStaffStore",std::fstream::out);
+            fileStaffStore.close();
+        } else {
+            fileStaffStore.read(reinterpret_cast<char*>(&staffNum), sizeof(int));
+            for (int i = 0; i < staffNum; ++i) {
+                char tmp[31];
+                fileStaffStore.read(reinterpret_cast<char*>(&tmp), sizeof(char[31]));
+                std::string staff = std::string(tmp);
+                staffAll.push_back(staff);
+            }
+            fileStaffStore.close();
+        }
         accountDataStore.initialize("fileAllAccountData", "fileAllAccount");
         AccountInf shopkeeper;
         shopkeeper.Initialize();
@@ -11,6 +25,17 @@ Account::Account() {
     } catch (BasicException &ex) {
         return;
     }
+}
+
+Account::~Account(){
+    fileStaffStore.open("fileStaffStore",std::fstream::out);
+    fileStaffStore.write(reinterpret_cast<char*>(&staffNum), sizeof(int));
+    for (int i = 0; i < staffNum; ++i){
+        char tmp[31];
+        strcpy(tmp,staffAll[i].c_str());
+        fileStaffStore.write(reinterpret_cast<char*>(&tmp), sizeof(char[31]));
+    }
+    fileStaffStore.close();
 }
 
 void Account::su(const std::string &_user_id, const std::string &_password){
