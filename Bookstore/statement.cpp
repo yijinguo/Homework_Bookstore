@@ -69,9 +69,9 @@ void Statement::Su () {
         } else {
             second = "";
         }
+        accountSystem.su(words[0], second);
         int priority = Account::accountLog.priority;
         std::string name = std::string(Account::accountLog.userID);
-        accountSystem.su(words[0], second);
         diarySystem.write(priority, name,diaryLine);
     } catch (BasicException &ex) {
         throw BasicException();
