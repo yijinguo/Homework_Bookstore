@@ -7,7 +7,7 @@ Account::Account() {
         AccountInf shopkeeper;
         shopkeeper.Initialize();
         accountDataStore.addInfo("root", shopkeeper);
-        selectFalse();
+        haveSelect = false;
     } catch (BasicException &ex) {
         return;
     }
@@ -37,7 +37,7 @@ std::string Account::logout(){
         account nowInLog = accountInStack.pop();
         AccountInf another = accountDataStore.readInfo(nowInLog.accountName);
         setLog(another);
-        selectFalse();
+        haveSelect = false;
         return nowInLog.bookISBN;
     } catch (DealException &ex) {
         AccountInf a;
@@ -46,7 +46,7 @@ std::string Account::logout(){
         strcpy(a.password,"0");
         strcpy(a.userName,"0");
         setLog(a);
-        std::string s = "\0";
+        std::string s = "";
         return s;
     } catch (BasicException &ex) {
         throw BasicException();

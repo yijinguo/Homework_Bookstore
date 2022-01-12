@@ -84,7 +84,8 @@ void Statement::Logout () {
         if (cmdLine[0] != '\0') throw BasicException();
         std::string s = accountSystem.logout();
         if (s[0] != '\0') {
-            Account::selectTrue();
+            //Account::selectTrue();
+            Account::haveSelect = true;
             bookSystem.select(s);
         }
         int priority = Account::accountLog.priority;

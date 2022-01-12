@@ -69,7 +69,10 @@ void Books::buy(const std::string &isbn, const int _quantity, Diary &diarySystem
 void Books::select(const std::string isbn){
     try {
         if (Account::accountLog.priority < 3) throw BasicException();
-        if (!Account::haveSelect) Account::selectTrue();
+        if (!Account::haveSelect) {
+            //Account::selectTrue();
+            Account::haveSelect = true;
+        }
         bookSelect = BookDataStore.findInfo(isbn);
         Account::accountInStack.modifyBook(isbn);
     } catch (CreateException &ex) {

@@ -46,7 +46,6 @@ public:
     static AccountInf accountLog;//只记录最新登陆，进行操作的用户
 
     static void initialize(){
-        //accountLog = {0, "0", "0", "0"};
         accountLog.priority = 0;
         strcpy(accountLog.userID,"0");
         strcpy(accountLog.password,"0");
@@ -56,8 +55,6 @@ public:
     static void setLog(AccountInf &a){
         accountLog = a;
     }
-    static void selectTrue(){haveSelect = true;}
-    static void selectFalse(){haveSelect = false;}
     static void addStaff(std::string staffID){
         staffNum++;
         staffAll.push_back(staffID);

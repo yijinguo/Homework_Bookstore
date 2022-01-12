@@ -619,8 +619,8 @@ public:
 
 
 struct account{
-    std::string accountName = "\0";
-    std::string bookISBN = "\0";
+    std::string accountName = "";
+    std::string bookISBN = "";
 };
 
 //用文件实现一个登录栈
@@ -659,6 +659,72 @@ public:
     //当有图书ISBN被改变
     void modifyIndex(std::string &oldIndex, std::string newIndex);
 
+};
+
+//用文件实现一个vector保存员工信息
+class Vector{
+private:
+    std::fstream file;
+    std::string fileName;
+    std::vector<std::string> vec;
+    int size = 0;
+public:
+    Vector(std::string name) {
+        fileName = name;
+        file.open(fileName,std::fstream::in);
+        if (!file) {
+            file.open(fileName,std::fstream::out);
+            size = 0;
+        } else {
+            file.read(reinterpret_cast<char*>(&size), sizeof(int));
+            for (int i = 0; i < size; ++i) {
+                char tmp[31] = {'\0'};
+                file.read(reinterpret_cast<char*>(&tmp), sizeof(char[31]));
+                std::string str = std::string(tmp);
+                vec.push_back(str);
+            }
+        }
+        file.close();
+    }
+    ~Vector(){
+        file.open(fileName,std::fstream::out);
+        file.write(reinterpret_cast<char*>(&size), sizeof(int));
+        for (int i = 0; i < size; ++i) {
+            char tmp[31] = {'\0'};
+            strcpy(tmp,vec[i].c_str());
+            file.write(reinterpret_cast<char*>(&tmp), sizeof(char[31]));
+        }
+        file.close();
+    }
+    std::string &operator[](int index){
+        return vec[index];
+    }
+    void push_back(const std::string &content){
+        size++;
+        vec.push_back(content);
+    }
+    void erase(const std::string &content){
+        size--;
+        auto it = vec.begin();
+        while (it != vec.end()) {
+            if (*it == content) {
+                vec.erase(it);
+                break;
+            }
+            it++;
+        }
+    }
+    bool find(const std::string &content){
+        auto it = vec.begin();
+        while (it != vec.end()) {
+            if (*it == content) {
+                return true;
+            }
+            it++;
+        }
+        return false;
+    }
+    int readSize(){return size;}
 };
 
 
