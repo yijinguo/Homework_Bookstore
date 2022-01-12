@@ -49,7 +49,7 @@ void Diary::reportFinance(){
 //{7}生成全体员工工作情况报告
 void Diary::reportEmployee(){
     if (Account::accountLog.priority != 7) throw BasicException();
-    for (int i = 0; i < Account::staffNum; ++i) {
+    for (int i = 0; i < Account::staffAll.readSize(); ++i) {
         diary.returnIndex(Account::staffAll[i]);
     }
 }

@@ -94,7 +94,7 @@ void Account::Useradd(const std::string &_user_id, const std::string &_password,
         strcpy(newCreate.password,_password.c_str());
         strcpy(newCreate.userName,_user_name.c_str());
         accountDataStore.addInfo(_user_id,newCreate);
-        if (priority == 3) addStaff(_user_id);
+        if (priority == 3) staffAll.push_back(_user_id);
     } catch (BasicException &ex) {
         throw BasicException();
     }
@@ -104,7 +104,7 @@ void Account::deleteAccount(const std::string &_user_id){
     try {
         if (accountLog.priority != 7) throw BasicException();
         if (accountInStack.InStack(_user_id)) throw BasicException();
-        if (findStaff(_user_id)) deleteStaff(_user_id);
+        if (staffAll.find(_user_id)) staffAll.erase(_user_id);
         accountDataStore.deleteInfo(_user_id);
     } catch (BasicException  &ex) {
         throw BasicException();

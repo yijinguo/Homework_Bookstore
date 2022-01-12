@@ -40,8 +40,7 @@ private:
 public:
 
     static Stack accountInStack;//登录栈应该只保ID，从栈中提取时再从DataStore中提取
-    static std::vector<std::string> staffAll;//全体员工:ID索引
-    static int staffNum;//记录员工人数
+    static Vector staffAll;//全体员工:ID索引
     static bool haveSelect;//记录是否有图书被选中
     static AccountInf accountLog;//只记录最新登陆，进行操作的用户
 
@@ -50,35 +49,10 @@ public:
         strcpy(accountLog.userID,"0");
         strcpy(accountLog.password,"0");
         strcpy(accountLog.userName,"0");
-        staffNum = 0;
     }
     static void setLog(AccountInf &a){
         accountLog = a;
     }
-    static void addStaff(std::string staffID){
-        staffNum++;
-        staffAll.push_back(staffID);
-    }
-    static void deleteStaff(std::string index){
-        auto it = staffAll.begin();
-        while (it != staffAll.end()) {
-            if (*it == index) {
-                staffAll.erase(it);
-                return;
-            }
-            it++;
-        }
-    }
-    static bool findStaff(std::string index){
-        auto it = staffAll.begin();
-        while (it != staffAll.end()) {
-            if (*it == index) return true;
-            it++;
-        }
-        return false;
-    };
-
-
 
     Account();
     //登录{0}

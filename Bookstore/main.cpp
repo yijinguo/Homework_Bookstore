@@ -2,9 +2,8 @@
 #include <fstream>
 
 AccountInf Account::accountLog = {0,"0","0","0"};
-int Account::staffNum = 0;
 bool Account::haveSelect = false;
-std::vector<std::string> Account::staffAll;
+Vector Account::staffAll("StaffDataBase");
 Stack Account::accountInStack;
 
 using namespace std;
