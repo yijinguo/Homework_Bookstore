@@ -46,7 +46,7 @@ public:
 
     static void initialize(){
         accountLog.priority = 0;
-        strcpy(accountLog.userID,"0");
+        strcpy(accountLog.userID,"visitor");
         strcpy(accountLog.password,"0");
         strcpy(accountLog.userName,"0");
     }

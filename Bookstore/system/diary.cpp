@@ -20,7 +20,7 @@ void Diary::importBook(std::string _user_id,std::string isbn,std::string _book_n
 void Diary::reportMyself(std::string &userID){
     if (Account::accountLog.priority < 3) throw BasicException();
     diary.clear();
-    diary.returnIndex(userID);
+    diary.returnIndex(userID, Account::accountLog.priority);
 }
 
 //注意判断time和私有Time的大小//若返回最新一笔，则time = -1;
@@ -48,9 +48,11 @@ void Diary::reportFinance(){
 
 //{7}生成全体员工工作情况报告
 void Diary::reportEmployee(){
+    diary.clear();
     if (Account::accountLog.priority != 7) throw BasicException();
+    diary.returnIndex(Account::accountLog.userID,7);
     for (int i = 0; i < Account::staffAll.readSize(); ++i) {
-        diary.returnIndex(Account::staffAll[i]);
+        diary.returnIndex(Account::staffAll[i],3);
     }
 }
 

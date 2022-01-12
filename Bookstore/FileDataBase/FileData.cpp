@@ -121,16 +121,16 @@ std::string takeFirstWord(std::string &cmd){
     }
 }
 //生成员工操作,注意生成最后需要多输出一行'\n'作为划分
-void DiaryRecord::returnIndex(std::string index) {
+void DiaryRecord::returnIndex(std::string index, int p) {
     int _priority = 0;
     char nameAndContent[1050];
     staffRecord.seekp(0,std::ios::end);
     staffRecord << index << "'s record" <<'\n';
-    diaryRecord.seekg(0);
-    while (diaryRecord.peek() != EOF) {
-        diaryRecord >> _priority;
+    diaryRecord.close();
+    diaryRecord.open("fileDiaryRecord",std::fstream::in);
+    while (diaryRecord >> _priority) {
         diaryRecord.getline(nameAndContent, 1050, '\n');
-        if (_priority != 3) continue;
+        if (_priority != p) continue;
         std::string content = std::string(nameAndContent);
         std::string name = takeFirstWord(content);
         if (name != index) continue;
@@ -143,10 +143,10 @@ void DiaryRecord::returnIndex(std::string index) {
 }
 
 void DiaryRecord::clear(){
-    diaryRecord.close();
-    diaryRecord.open("fileDiaryRecord",std::fstream::out);
-    diaryRecord.close();
-    diaryRecord.open("fileDiaryRecord");
+    staffRecord.close();
+    staffRecord.open("fileStaffRecord",std::fstream::out);
+    staffRecord.close();
+    staffRecord.open("fileStaffRecord");
 }
 
 

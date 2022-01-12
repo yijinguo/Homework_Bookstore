@@ -738,7 +738,7 @@ public:
     ~DiaryRecord();
     void write(int &priority,std::string &name, std::string &content);
     //生成员工操作
-    void returnIndex(std::string index);
+    void returnIndex(std::string index, int p);
     //清除生成员工操作的文件
     void clear();
 };

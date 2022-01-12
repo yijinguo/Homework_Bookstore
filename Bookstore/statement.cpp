@@ -69,10 +69,10 @@ void Statement::Su () {
         } else {
             second = "";
         }
-        accountSystem.su(words[0], second);
         int priority = Account::accountLog.priority;
         std::string name = std::string(Account::accountLog.userID);
         diarySystem.write(priority, name,diaryLine);
+        accountSystem.su(words[0], second);
     } catch (BasicException &ex) {
         throw BasicException();
     }
@@ -262,11 +262,10 @@ void Statement::ReportMyself () {
         if (wordNum != 0) throw BasicException();
         if (Account::accountLog.priority != 3 && Account::accountLog.priority != 7) throw BasicException();
         std::string ID = std::string(Account::accountLog.userID);
-        diarySystem.reportMyself(ID);
         int priority = Account::accountLog.priority;
         std::string name = std::string(Account::accountLog.userID);
-        diarySystem.reportMyself(name);
         diarySystem.write(priority, name, diaryLine);
+        diarySystem.reportMyself(ID);
     } catch (BasicException &ex) {
         throw BasicException();
     }

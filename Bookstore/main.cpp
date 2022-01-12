@@ -3,13 +3,11 @@
 
 AccountInf Account::accountLog = {0,"0","0","0"};
 bool Account::haveSelect = false;
-Vector Account::staffAll("StaffDataBase");
+Vector Account::staffAll("fileStaffDataBase");
 Stack Account::accountInStack;
 
 using namespace std;
 int main(){
-    //freopen("2.in","r",stdin);
-    //freopen("gyj.out","w",stdout);
     Statement stmt;
     string cmd;
     while (getline(cin, cmd)) {
