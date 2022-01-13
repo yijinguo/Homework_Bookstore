@@ -12,8 +12,8 @@ private:
 
 public:
 
-    //Diary();
-    //~Diary();
+    Diary() = default;
+    ~Diary() = default;
 
     //将某用户的某次操作记录写入文件
     void write(int &priority,std::string &name, std::string &content);

@@ -128,6 +128,7 @@ void DiaryRecord::returnIndex(std::string index, int p) {
     staffRecord << index << "'s record" <<'\n';
     diaryRecord.close();
     diaryRecord.open("fileDiaryRecord",std::fstream::in);
+    int operator_num = 0;
     while (diaryRecord >> _priority) {
         diaryRecord.getline(nameAndContent, 1050, '\n');
         if (_priority != p) continue;
@@ -138,6 +139,18 @@ void DiaryRecord::returnIndex(std::string index, int p) {
         strcpy(transfer,content.c_str());
         std::string _content = std::string(transfer);
         staffRecord << _content << '\n';
+        operator_num++;
+    }
+    if (p == 7) {
+        staffRecord << "This is my life." << '\n';
+    } else {
+        if (operator_num == 0) {
+            staffRecord << "Maybe "<< index << " has a day off today." << '\n';
+        } else if (operator_num <= 30) {
+            staffRecord << index << " is working hard." << '\n';
+        } else {
+            staffRecord << index << " is so busy now." << '\n';
+        }
     }
     staffRecord << '\n';
 }
@@ -220,7 +233,7 @@ TradeRecord::TradeRecord(){
         tradeRecord.open("fileTradeRecord",std::fstream::out);
     }
     tradeRecord.close();
-    tradeRecord.open("fileTradeRecord");
+    tradeRecord.open("fileTradeRecord",std::fstream::app);
 }
 
 TradeRecord::~TradeRecord(){
@@ -236,6 +249,7 @@ void TradeRecord::importBook(std::string _user_id,std::string isbn,std::string _
 }
 
 void TradeRecord::writeTotal(FinanceRecord &a){
-    tradeRecord << a.Time << "  + " << a.inAll << " - " << a.outAll << '\n';
+    tradeRecord << "The boss wants to know the sales now\n";
+    tradeRecord << "Trade times: " << a.Time << "\nTotal income: " << a.inAll << "\nTotal cost: " << a.outAll << "\nTotal profit: " << a.inAll - a.outAll << '\n';
 }
 

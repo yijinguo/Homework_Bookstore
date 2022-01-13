@@ -317,10 +317,10 @@ void Statement::ReportEmployee () {
     try {
         separateCmd(cmdLine);
         if (wordNum != 0) throw BasicException();
-        diarySystem.reportEmployee();
         int priority = Account::accountLog.priority;
         std::string name = std::string(Account::accountLog.userID);
         diarySystem.write(priority, name, diaryLine);
+        diarySystem.reportEmployee();
     } catch (BasicException &ex) {
         throw BasicException();
     }
